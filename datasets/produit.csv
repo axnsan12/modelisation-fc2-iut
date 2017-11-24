@@ -1,0 +1,11 @@
+id;titre;description;prix;etat;photo;iduser;idacheteur;idachat
+1;Camembert;tres bon;5;1;https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Camembert.JPG/250px-Camembert.JPG;1124;1118;6
+2;Marroilles;extraordinaire;5;1;http://a142.idata.over-blog.com/2/96/50/11/ARCHIVE-32/maroilles.jpg;1113;1118;2
+3;Lait chevre;mmmm;2;0;http://www.maison-du-lait.com/sites/default/files/styles/related_page/public/medias/images/header/header-fond_cruche-lait_1.jpg?itok=rT0YhN9w;1118;0;0
+4;Pommes de terre;essentielle;1;0;http://jardinage.lemonde.fr/images/dossiers/historique/pommedeterre-114236.jpg;1121;0;0
+5;Oignons;ca va;1;1;http://www.aujardindes4saisons.fr/dossiers/racine/articles/oignons1-0.png;1119;1118;3
+6;Pain;bonjour;3;1;http://patrickdoucet.com/wp-content/uploads/2015/07/pain-boulot1.jpg;1113;1118;1
+7;Baguette;ca va;6;1;https://img.buzzarena.com/2015/06/baguette-barbecue.jpg;1114;1118;4
+8;Ail;mmmm;4;0;http://www.musculaction.com/images/intro-ail.jpg;1116;0;0
+9;Vin;ouii;12;1;https://steptohealth.com/wp-content/uploads/2017/01/red-wine.jpg;1111;1118;0
+10;Confiture;nonn;7;1;http://www.dessertsetconfitures.com/var/dessert/storage/images/media/images/confiture-d-abricots3/712583-1-fre-FR/Confiture-d-abricots.jpg;1112;1118;5

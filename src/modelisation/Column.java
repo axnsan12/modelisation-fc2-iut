@@ -11,7 +11,12 @@ public class Column<T> {
         this.values = values;
     }
 
-    public String getName() {
+    public Column(String string) {
+    	this.name = string;
+        values = new ArrayList<>();
+	}
+
+	public String getName() {
         return name;
     }
 
@@ -34,4 +39,9 @@ public class Column<T> {
                 ", values=" + values +
                 '}';
     }
+
+	public void addValue(T elmt) {
+		values.add(elmt);
+		
+	}
 }

@@ -18,5 +18,6 @@ public class Window extends Application {
         primaryStage.setTitle("Arbre");
         primaryStage.setScene(scene);
         primaryStage.show();
+        
     }
 }

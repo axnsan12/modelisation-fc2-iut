@@ -1,5 +1,7 @@
 package modelisation;
 
+import java.io.File;
+
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -11,6 +13,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class Window extends Application {
@@ -70,6 +73,21 @@ public class Window extends Application {
             public void handle(ActionEvent event) {
                 System.exit(0);
             }
+        });
+        
+      //recuperation CSV
+        ouvertureFichierItem.setOnAction(new EventHandler<ActionEvent>() {
+      	  
+        	public void handle(ActionEvent t){
+        		// ouvre une boite de dialogue pour la selection d'un fichier
+    			FileChooser fileChooser = new FileChooser(); 
+    			// extension fichier
+    			FileChooser.ExtensionFilter extFilterCSV = new FileChooser.ExtensionFilter("CSV files(*.csv)","*.csv"); 
+    			
+    			fileChooser.getExtensionFilters().addAll(extFilterCSV);
+
+    			File csv = fileChooser.showOpenDialog(null);
+        	}
         });
     	
     	

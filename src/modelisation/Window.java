@@ -5,6 +5,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
@@ -42,6 +44,18 @@ public class Window extends Application {
         
         // Ajout du menu à la barre de Menu
         menuBar.getMenus().addAll(fichierMenu, fonctionsMenu, aideMenu);
+        
+        
+        // Creation tableau
+    	final TableView<String> tableView = new TableView();
+    	
+    	// Ajout colonnes au tableau
+    	int nbreColonnes = 9;
+    	for(int i=0; i<nbreColonnes;i++)
+    	{
+    		TableColumn<String,String> col = new TableColumn<>(""+i);
+    		tableView.getColumns().add(col);
+    	}
     	
     	
     	
@@ -50,6 +64,11 @@ public class Window extends Application {
         root.setLeftAnchor(menuBar, 10.0);
         AnchorPane.setRightAnchor(menuBar, 10.0);
         root.getChildren().add(menuBar);
+        root.setTopAnchor(tableView, 40.0);
+        root.setLeftAnchor(tableView, 10.0);
+        root.setRightAnchor(tableView, 190.0);
+        root.setBottomAnchor(tableView, 10.0);
+        root.getChildren().add(tableView);
     	Scene scene = new Scene(root, 400, 200);
         primaryStage.setTitle("Arbre");
         primaryStage.setScene(scene);

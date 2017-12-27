@@ -89,6 +89,22 @@ public class Window extends Application {
     			File csv = fileChooser.showOpenDialog(null);
         	}
         });
+        
+        //sauvegarde de l'arbre
+        enregistreFichierItem.setOnAction(new EventHandler<ActionEvent>() {
+        	  
+            @Override
+            public void handle(ActionEvent event) {
+                FileChooser fileChooser = new FileChooser();
+    
+                //Set extension filter
+                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.txt");
+                fileChooser.getExtensionFilters().add(extFilter);
+                
+                //Show save file dialog
+                File save = fileChooser.showSaveDialog(primaryStage);
+            }
+        });
     	
     	
     	

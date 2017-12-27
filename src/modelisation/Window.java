@@ -1,12 +1,15 @@
 package modelisation;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
@@ -56,6 +59,18 @@ public class Window extends Application {
     		TableColumn<String,String> col = new TableColumn<>(""+i);
     		tableView.getColumns().add(col);
     	}
+    	
+    	 // Set Accelerator for Exit MenuItem.
+        quitterItem.setAccelerator(KeyCombination.keyCombination("Ctrl+X"));
+         
+        // Quand l'utilisateur clic sur le bouteau quitter
+        quitterItem.setOnAction(new EventHandler<ActionEvent>() {
+         
+            @Override
+            public void handle(ActionEvent event) {
+                System.exit(0);
+            }
+        });
     	
     	
     	

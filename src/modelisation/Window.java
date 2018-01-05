@@ -6,6 +6,7 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -123,6 +124,17 @@ public class Window extends Application {
         treeRoot.setExpanded(true);
         treeRoot.getChildren().setAll(trainItem,voitureItem);
         treeView.setRoot(treeRoot);
+        
+        // supprimer noeuds arbre
+        Button supprimer = new Button("Supprimer Noeuds");
+        supprimer.setOnAction(new EventHandler<ActionEvent>() {
+     	   public void handle(ActionEvent e) {
+     		   TreeItem delete = (TreeItem)treeView.getSelectionModel().getSelectedItem();
+     		   boolean suppr = delete.getParent().getChildren().remove(delete);
+     		   System.out.println("suppression");
+     	   }
+     	   
+        });
     	
     	
     	

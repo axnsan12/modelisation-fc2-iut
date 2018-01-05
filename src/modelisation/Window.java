@@ -11,6 +11,8 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
@@ -105,6 +107,22 @@ public class Window extends Application {
                 File save = fileChooser.showSaveDialog(primaryStage);
             }
         });
+        
+      //test arbre
+        TreeView<String> treeView = new TreeView<String>(); 
+         
+        final TreeItem<String> trainItem = new TreeItem<>("train");
+        trainItem.getChildren().setAll(new TreeItem("locomotive"));
+        trainItem.setExpanded(true);
+        
+        final TreeItem<String> voitureItem = new TreeItem<>("voiture");
+        voitureItem.getChildren().setAll(new TreeItem("toyota"));
+        voitureItem.setExpanded(true);
+        
+        final TreeItem<String> treeRoot = new TreeItem<>("vehicules");
+        treeRoot.setExpanded(true);
+        treeRoot.getChildren().setAll(trainItem,voitureItem);
+        treeView.setRoot(treeRoot);
     	
     	
     	

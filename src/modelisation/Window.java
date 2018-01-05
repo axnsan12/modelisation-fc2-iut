@@ -138,16 +138,26 @@ public class Window extends Application {
     	
     	
     	
-    	AnchorPane root = new AnchorPane();
-    	root.setTopAnchor(menuBar,  10.0);
+        AnchorPane root = new AnchorPane();
+        root.setTopAnchor(menuBar,  10.0);
         root.setLeftAnchor(menuBar, 10.0);
         AnchorPane.setRightAnchor(menuBar, 10.0);
-        root.getChildren().add(menuBar);
-        root.setTopAnchor(tableView, 40.0);
+       root.setTopAnchor(tableView, 60.0);
         root.setLeftAnchor(tableView, 10.0);
-        root.setRightAnchor(tableView, 190.0);
+        root.setRightAnchor(tableView, 800.0);
         root.setBottomAnchor(tableView, 10.0);
+        root.setTopAnchor(treeView, 60.0);
+        root.setLeftAnchor(treeView, 800.0);
+        root.setRightAnchor(treeView, 10.0);
+        root.setBottomAnchor(treeView, 10.0);
+        root.setTopAnchor(supprimer, 60.0);
+        root.setLeftAnchor(supprimer, 600.0);
+        root.setRightAnchor(supprimer, 600.0);
+        root.setBottomAnchor(supprimer, 600.0);
+        root.getChildren().add(menuBar);
         root.getChildren().add(tableView);
+        root.getChildren().add(treeView);
+        root.getChildren().add(supprimer);
     	Scene scene = new Scene(root, 400, 200);
         primaryStage.setTitle("Arbre");
         primaryStage.setScene(scene);

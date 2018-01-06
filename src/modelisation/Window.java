@@ -3,6 +3,8 @@ package modelisation;
 import java.io.File;
 
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -13,6 +15,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -20,6 +23,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 public class Window extends Application {
 	
@@ -166,6 +170,24 @@ public class Window extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
         
+    }
+    
+    private void creationTableau() {
+    	int numeroColonne = 0;
+    	TableColumn[] colonne = new TableColumn[headers.size()];
+    	for (String nomColonne : headers) {
+    		final int indice = numeroColonne;
+    		colonne[numeroColonne] = new TableColumn(nomColonne);
+    		colonne[numeroColonne].setCellValueFactory(
+    				new Callback<CellDataFeatures<ObservableList, String>, ObservableValue<String>>() {
+    					public ObservableValue<String> call(CellDataFeatures<ObservableList, String> param){
+    						return new SimpleStringProperty(param.getValue().get(indice).toString());
+    					}
+    				});
+    		numeroColonne++;
+    	}
+    	tableView.getColumns().addAll(colonne);
+    	tableView.setItems(données);
     }
     
     private boolean verificationFichier(File file) {

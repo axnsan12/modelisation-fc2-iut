@@ -94,6 +94,8 @@ public class Window extends Application {
         	}
         });
         
+        
+        
         //sauvegarde de l'arbre
         enregistreFichierItem.setOnAction(new EventHandler<ActionEvent>() {
         	  
@@ -164,5 +166,15 @@ public class Window extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
         
+    }
+    
+    private boolean verificationFichier(File file) {
+    	if(file.exists()) {
+    		if(file.isFile() && file.canRead()) {
+    			return true;
+    		}
+    		
+    	}
+    	return false;
     }
 }

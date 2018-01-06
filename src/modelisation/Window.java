@@ -3,6 +3,8 @@ package modelisation;
 import java.io.File;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -20,6 +22,11 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class Window extends Application {
+	
+	ObservableList<String> headers = FXCollections.observableArrayList();
+	ObservableList<ObservableList> données = FXCollections.observableArrayList();
+	
+	TableView<ObservableList> tableView;
 
     public static void main(String[] args) {
         launch(args);
@@ -56,15 +63,9 @@ public class Window extends Application {
         
         
         // Creation tableau
-    	final TableView<String> tableView = new TableView();
+    	tableView = new TableView();
     	
-    	// Ajout colonnes au tableau
-    	int nbreColonnes = 9;
-    	for(int i=0; i<nbreColonnes;i++)
-    	{
-    		TableColumn<String,String> col = new TableColumn<>(""+i);
-    		tableView.getColumns().add(col);
-    	}
+    	
     	
     	 // Set Accelerator for Exit MenuItem.
         quitterItem.setAccelerator(KeyCombination.keyCombination("Ctrl+X"));

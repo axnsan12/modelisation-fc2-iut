@@ -1,6 +1,12 @@
 package modelisation;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.StringTokenizer;
 
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
@@ -95,9 +101,50 @@ public class Window extends Application {
     			fileChooser.getExtensionFilters().addAll(extFilterCSV);
 
     			File csv = fileChooser.showOpenDialog(null);
+    			
+    			if(csv!=null) {
+    				lireCSV(csv);
         	}
-        });
+        }
         
+        private void lireCSV(File file) {
+        	try {
+        		if(verificationFichier(file)) {
+        			FileInputStream in = new FileInputStream(file);
+        			InputStreamReader sr = new InputStreamReader(in, "UTF-8");
+        			BufferedReader br = new BufferedReader(sr);
+        			
+        			String ligne;
+        			boolean header = true;
+        			while((ligne = br.readLine()) != null) {
+        				StringTokenizer séparateur = new StringTokenizer(ligne, ";");
+        				ObservableList<String> ligneListe = FXCollections.observableArrayList();
+        				
+        				if(header) {
+        					while(séparateur.hasMoreTokens()) {
+        						headers.add(séparateur.nextToken());
+        					}
+        					header = false;
+        				} else {
+        					while (séparateur.hasMoreTokens()) {
+        						ligneListe.add(séparateur.nextToken());
+        					}
+        					données.add(ligneListe);
+        				}
+        			}
+        		} else {
+        			System.out.println("Le fichier n'existe pas / erreur de lecture.");
+        		}
+        	} catch (FileNotFoundException e) {
+        		System.out.println("FileNotFoundException :"+e.getMessage());
+        	} catch (IOException e) {
+        		System.out.println("IOException:"+e.getMessage());
+        	}
+        	
+        	creationTableau();
+        }
+    });
+    
         
         
         //sauvegarde de l'arbre

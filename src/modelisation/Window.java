@@ -27,17 +27,18 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
 public class Window extends Application {
 	
-	ObservableList<String> headers = FXCollections.observableArrayList();
-	ObservableList<ObservableList> données = FXCollections.observableArrayList();
+	ObservableList<String> entête = FXCollections.observableArrayList(); //liste nom colonnes
+	ObservableList<ObservableList> données = FXCollections.observableArrayList(); //liste contenue CSV données
 	
 	
-	TableView<ObservableList> tableView;
+	TableView<ObservableList> tableView; //tableau pour stocker les données
 
     public static void main(String[] args) {
         launch(args);
@@ -124,7 +125,7 @@ public class Window extends Application {
         				if(header) {
         					// tant que j'ai encore un séparateur ";"
         					while(séparateur.hasMoreTokens()) {
-        						headers.add(séparateur.nextToken());
+        						entête.add(séparateur.nextToken());
         					}
         					header = false;
         				} else {
@@ -197,7 +198,7 @@ public class Window extends Application {
     	
     	
     	
-        AnchorPane root = new AnchorPane();
+        /*AnchorPane root = new AnchorPane();
         root.setTopAnchor(menuBar,  10.0);
         root.setLeftAnchor(menuBar, 10.0);
         AnchorPane.setRightAnchor(menuBar, 10.0);
@@ -220,14 +221,27 @@ public class Window extends Application {
     	Scene scene = new Scene(root, 400, 200);
         primaryStage.setTitle("Arbre");
         primaryStage.setScene(scene);
+        primaryStage.show();*/
+        
+        BorderPane root = new BorderPane();
+        root.setTop(menuBar);
+        root.setLeft(tableView);
+       	root.setRight(treeView);
+        root.setCenter(supprimer);
+    	Scene scene = new Scene(root, 400, 200);
+        primaryStage.setTitle("Arbre");
+        primaryStage.setScene(scene);
         primaryStage.show();
         
+        
+        
+       
     }
     
     private void creationTableau() {
     	int numeroColonne = 0;
-    	TableColumn[] colonne = new TableColumn[headers.size()];
-    	for (String nomColonne : headers) {
+    	TableColumn[] colonne = new TableColumn[entête.size()]; 
+    	for (String nomColonne : entête) {
     		final int indice = numeroColonne;
     		colonne[numeroColonne] = new TableColumn(nomColonne);
     		colonne[numeroColonne].setCellValueFactory(

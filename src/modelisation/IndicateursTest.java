@@ -9,6 +9,6 @@ public class IndicateursTest {
 		System.out.println(Indicateurs.chi2(X, Y));
 		System.out.println(Indicateurs.gini(X, Y));
 		System.out.println(Indicateurs.erreurClass(X,Y));
-
+		System.out.println(Indicateurs.entropie(X,Y));
 }
 }

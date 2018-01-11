@@ -12,7 +12,6 @@ public class Indicateurs {
 		{
 			for (int j=0;j<tab[i].length-1;j++)
 			{
-				System.out.println("cases = cases +((double)" + tab[i][j] + "* (double)" + tab[i][j] + ")/((double)" + tab[i][tab[i].length-1] + "*(double)" + tab[tab.length-1][j]);
 				cases = cases + ((double)tab[i][j]*(double)tab[i][j])/((double)tab[i][tab[i].length-1]*(double)tab[tab.length-1][j]);
 			}
 		}
@@ -63,10 +62,68 @@ public class Indicateurs {
 	public static double entropie(int []X, int[] Y)
 	{
 		int [][] tab = tabCont(X,Y);
-		return 0;
+		double entropie=0;
+		double pkt=0;
+		for (int i=0;i<tab.length-1;i++)
+		{
+			for (int j=0;j<tab[i].length-1;j++)
+			{
+				pkt=((double)(tab[i][j]/(double)tab[i][tab[i].length-1])*(double)(tab[i][j]/(double)tab[i][tab[i].length-1]));
+				entropie = entropie + pkt*Math.log(pkt)/Math.log(2);
+			}
+		}
+		entropie = - entropie;
+		return entropie;
 	}
 	
-	//Afficher le tableau de contingence de deux vecteurs passes en parametres
+	//Transforme une variable continue en variable discrète.
+	public static int[] faireEcarts(int []X)
+	{
+		int []totopt=calculOption(X);
+		int []Xbis=null;
+		if(X.length > 9)
+		{
+			if (totopt.length > 20*X.length/100)
+			{
+				Xbis = new int[X.length];
+				for (int i=0;i<Xbis.length;i++)
+				{
+					if (Xbis[i]<(maximum(X)+minimum(X))/2) {Xbis[i]=1;}
+					else {Xbis[i]=2;}
+				}
+			}
+			else
+			{
+				Xbis=X;
+			}
+		}
+		else
+		{
+			Xbis=X;
+		}
+		return Xbis;
+	}
+	
+	private static int minimum(int[] x) {
+		int min=x[0];
+		for (int i=1;i<x.length;i++)
+		{
+			if (min > x[i]) {min = x[i];}
+		}
+		return min;
+	}
+
+	private static int maximum(int[] x) {
+		// TODO Auto-generated method stub
+		int max=x[0];
+		for (int i=1;i<x.length;i++)
+		{
+			if (max < x[i]) {max = x[i];}
+		}
+		return max;
+	}
+
+	//Afficher le tableau de contingence de deux vecteurs passes en parametres 
 		public static void afficherTabCont(int []X, int[] Y)
 		{
 			int [][] tabCont = tabCont(X,Y);

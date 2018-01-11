@@ -77,6 +77,7 @@ public class Window extends Application {
     	tableView = new TableView();
     	
     	
+    	
     	 // Set Accelerator for Exit MenuItem.
         quitterItem.setAccelerator(KeyCombination.keyCombination("Ctrl+X"));
          

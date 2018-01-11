@@ -36,6 +36,7 @@ public class Window extends Application {
 	ObservableList<String> headers = FXCollections.observableArrayList();
 	ObservableList<ObservableList> données = FXCollections.observableArrayList();
 	
+	
 	TableView<ObservableList> tableView;
 
     public static void main(String[] args) {
@@ -101,7 +102,7 @@ public class Window extends Application {
     			fileChooser.getExtensionFilters().addAll(extFilterCSV);
 
     			File csv = fileChooser.showOpenDialog(null);
-    			
+    			// si le csv existe lire le CSV
     			if(csv!=null) {
     				lireCSV(csv);
         	}
@@ -109,18 +110,21 @@ public class Window extends Application {
         
         private void lireCSV(File file) {
         	try {
+        		// si le fichier existe et qu'il peut être lu
         		if(verificationFichier(file)) {
         			FileInputStream in = new FileInputStream(file);
         			InputStreamReader sr = new InputStreamReader(in, "UTF-8");
         			BufferedReader br = new BufferedReader(sr);
         			
-        			String ligne;
+        			String ligne; // lignes du CSV (ligne d'entête "nom colonnes" nom compris)
         			boolean header = true;
         			while((ligne = br.readLine()) != null) {
+        				// découpe la string en une suite de mots séparés par le ";"
         				StringTokenizer séparateur = new StringTokenizer(ligne, ";");
-        				ObservableList<String> ligneListe = FXCollections.observableArrayList();
+        				ObservableList<String>ligneListe = FXCollections.observableArrayList();
         				
         				if(header) {
+        					// tant que j'ai encore un séparateur ";"
         					while(séparateur.hasMoreTokens()) {
         						headers.add(séparateur.nextToken());
         					}
@@ -130,6 +134,7 @@ public class Window extends Application {
         						ligneListe.add(séparateur.nextToken());
         					}
         					données.add(ligneListe);
+        					
         				}
         			}
         		} else {
@@ -154,11 +159,11 @@ public class Window extends Application {
             public void handle(ActionEvent event) {
                 FileChooser fileChooser = new FileChooser();
     
-                //Set extension filter
+                // filtre extension
                 FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.txt");
                 fileChooser.getExtensionFilters().add(extFilter);
                 
-                //Show save file dialog
+                // boîte de dialogue sauvegarde
                 File save = fileChooser.showSaveDialog(primaryStage);
             }
         });
@@ -189,6 +194,8 @@ public class Window extends Application {
      	   }
      	   
         });
+        
+        
     	
     	
     	
@@ -234,7 +241,7 @@ public class Window extends Application {
     		numeroColonne++;
     	}
     	tableView.getColumns().addAll(colonne);
-    	tableView.setItems(données);
+    	tableView.setItems(données); // ajouts des données au tableView
     }
     
     private boolean verificationFichier(File file) {

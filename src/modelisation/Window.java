@@ -76,7 +76,6 @@ public class Window extends Application {
         // Creation tableau
     	tableView = new TableView();
     	
-    	
     	 // Set Accelerator for Exit MenuItem.
         quitterItem.setAccelerator(KeyCombination.keyCombination("Ctrl+X"));
          

@@ -7,12 +7,95 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 
-public class DecisionTreeBuilder {
+public class DecisionTreeBuilder implements Cloneable {
     protected int idColumnIndex, targetColumnIndex;
+    protected Configuration config;
 
-    public DecisionTreeBuilder(int idColumnIndex, int targetColumnIndex) {
+    public static class Configuration
+    {
+        private int continuousMinLines;
+        private int discreteMaxPercentage;
+        private int minNodeSize;
+
+        public Configuration clone() {
+            try {
+                return (Configuration) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        /**
+         * The minimum number of lines required in order to treat values as continuous. If there are less than this
+         * number of lines in the data set, values will always be treated as discrete.
+         */
+        public int getContinuousMinLines() {
+            return continuousMinLines;
+        }
+
+        /**
+         * <p>The maximum percentage of distinct values (out of the total number of lines), after which the column
+         * is considered to be a continuous value. This only applies if the total number of lines is greater than
+         * or requal to {@link #getContinuousMinLines()}.</p>
+         *
+         * Valid range: [0, 100]
+         */
+        public int getDiscreteMaxPercentage() {
+            return discreteMaxPercentage;
+        }
+
+        /**
+         * <p></p>The minimum number of individuals in the training set that must be matched by a node. If a split would
+         * generate a node that would drop below this minimum size, the split will not be made.</p>
+         *
+         * In effect, this ensures that {@link DecisionTree#getPopulationCount()} will return at least
+         * {@code minNodeSize} for every node in a tree generated with this configuration.
+         */
+        public int getMinNodeSize() {
+            return minNodeSize;
+        }
+
+        /**
+         * See {@link #getContinuousMinLines()}.
+         */
+        public Configuration withContinuousMinLines(int continuousMinLines) {
+            Configuration result = this.clone();
+            result.continuousMinLines = continuousMinLines;
+            return result;
+        }
+
+        /**
+         * See {@link #getDiscreteMaxPercentage()}.
+         */
+        public Configuration withDiscreteMaxPercentage(int discreteMaxPercentage) {
+            Configuration result = this.clone();
+            result.discreteMaxPercentage = discreteMaxPercentage;
+            return result;
+        }
+
+        /**
+         * See {@link #getMinNodeSize()}.
+         */
+        public Configuration withMinNodeSize(int minNodeSize) {
+            Configuration result = this.clone();
+            result.minNodeSize = minNodeSize;
+            return result;
+        }
+    }
+
+    public static final Configuration DEFAULT_CONFIG = new Configuration()
+            .withContinuousMinLines(10)
+            .withDiscreteMaxPercentage(20)
+            .withMinNodeSize(4);
+
+    public DecisionTreeBuilder(int idColumnIndex, int targetColumnIndex, Configuration config) {
         this.idColumnIndex = idColumnIndex;
         this.targetColumnIndex = targetColumnIndex;
+        this.config = config;
+    }
+
+    public DecisionTreeBuilder(int idColumnIndex, int targetColumnIndex) {
+        this(idColumnIndex, targetColumnIndex, DEFAULT_CONFIG);
     }
 
     protected static class SplitScore
@@ -49,25 +132,27 @@ public class DecisionTreeBuilder {
     public DecisionTree buildTree(int[][] data) {
         checkInputData(data, idColumnIndex, targetColumnIndex);
 
-        ArrayList<SplitScore> scores = new ArrayList<>(data.length);
+        ArrayList<SplitScore> splits = new ArrayList<>(data.length);
         // we go through all unused columns and calculate the split score for each
         for (int columnIndex = 0; columnIndex < data.length; ++columnIndex) {
             if (columnIndex != idColumnIndex && columnIndex != targetColumnIndex) {
-                final double splitValue;
-                if (Indicateurs.shouldDiscretize(data[columnIndex])) {
+                double splitValue = Double.NaN;
+                if (Indicateurs.shouldDiscretize(data[columnIndex], config.getContinuousMinLines(), config.getDiscreteMaxPercentage())) {
                     splitValue = Indicateurs.getSplitValue(data[columnIndex]);
                 }
-                else {
-                    splitValue = Double.NaN;
-                }
                 double score = evaluateSplit(data[targetColumnIndex], data[columnIndex]);
-                scores.add(new SplitScore(columnIndex, splitValue, score));
+                splits.add(new SplitScore(columnIndex, splitValue, score));
             }
         }
 
-        SplitScore split = chooseBestScore(scores);
+        if (splits.isEmpty()) {
+            System.out.println("No more splits to make!");
+            return null;
+        }
 
-        return null;
+        SplitScore split = chooseBestSplit(splits);
+        DecisionTree result = new DecisionTree(split.columnIndex, data[0].length);
+        return result;
     }
 
     /**
@@ -75,10 +160,10 @@ public class DecisionTreeBuilder {
      *
      * The score returned by {@link #evaluateSplit(int[], int[])} is accesible via {@link SplitScore#score}.
      *
-     * @param splits
-     * @return
+     * @param splits an array of possible splits to be compared
+     * @return the best scoring split
      */
-    protected SplitScore chooseBestScore(Collection<SplitScore> splits) {
+    protected SplitScore chooseBestSplit(Collection<SplitScore> splits) {
         return splits.stream().min(Comparator.comparingDouble(s -> s.score))
                 .orElseThrow(() -> new IllegalArgumentException("empty splits array"));
     }
@@ -89,7 +174,7 @@ public class DecisionTreeBuilder {
      *
      * @param targetColumn column containing the values to classify/predict
      * @param splitColumn column containing discrete values to make a split decision on
-     * @return a split score as interpreted by {@link #chooseBestScore(Collection)}
+     * @return a split score as interpreted by {@link #chooseBestSplit(Collection)}
      */
     protected double evaluateSplit(int[] targetColumn, int[] splitColumn) {
         return Indicateurs.gini(targetColumn, splitColumn);

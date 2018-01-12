@@ -189,7 +189,7 @@ public class Indicateurs {
 			 * @param X Variable a etudier
 			 * @return
 			 */
-	public static double d(int i, int []Y, int [] X)
+	public static double d(int i, double []Y, double [] X)
 	{
 		double [] fils1 = moyenneFilsSup(i,Y,X);
 		double [] fils2 = moyenneFilsInf(i,Y,X);
@@ -204,7 +204,7 @@ public class Indicateurs {
 			 * @param X Variable a etudier
 			 * @return
 			 */
-	private static double [] moyenneFilsSup(int i, int []Y, int [] X)
+	private static double [] moyenneFilsSup(int i, double []Y, double [] X)
 	{
 		double c = C(i,X);
 		double moyenne=0,cmpt=0,d=0,sum1=0,sum2=0;
@@ -214,9 +214,9 @@ public class Indicateurs {
 			if (X[j] >= c)
 			{
 				cmpt ++;
-				moyenne = moyenne + (double)Y[j];
-				sum1 = sum1 + (double)Y[j];
-				sum2 = sum2 + (double)Y[j]*Y[j];
+				moyenne = moyenne + Y[j];
+				sum1 = sum1 + Y[j];
+				sum2 = sum2 + Y[j]*Y[j];
 			}
 		}
 		moyenne = moyenne/cmpt;
@@ -233,7 +233,7 @@ public class Indicateurs {
 			 * @param X Variable a etudier
 			 * @return
 			 */
-	private static double[] moyenneFilsInf(int i, int []Y, int [] X)
+	private static double[] moyenneFilsInf(int i, double []Y, double [] X)
 	{
 		double c = C(i,X);
 		double moyenne=0,cmpt=0,d=0,sum1=0,sum2=0;
@@ -243,9 +243,9 @@ public class Indicateurs {
 			if (X[j] < c)
 			{
 				cmpt ++;
-				moyenne = moyenne + (double)Y[j];
-				sum1 = sum1 + (double)Y[j];
-				sum2 = sum2 + (double)Y[j]*Y[j];
+				moyenne = moyenne + Y[j];
+				sum1 = sum1 + Y[j];
+				sum2 = sum2 + Y[j]*Y[j];
 			}
 		}
 		moyenne = moyenne/cmpt;
@@ -255,9 +255,9 @@ public class Indicateurs {
 		return combi;
 	}
 	
-	private static double C(int i,int[] X)
+	private static double C(int i,double[] X)
 	{
-		return ((double)X[i]+(double)X[i-1]/2);
+		return (X[i]+X[i-1])/2;
 	}
 	
 	//Outils internes

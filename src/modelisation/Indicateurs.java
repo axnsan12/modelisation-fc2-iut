@@ -83,31 +83,27 @@ public class Indicateurs {
 		entropie = - entropie;
 		return entropie;
 	}
+
+	public static double getSplitValue(int []Y, int[]X)
+	{
+		return (maximum(X)+minimum(X))/2;
+	}
 	
-	//Transforme une variable continue en variable discrète.
-	public static int[] faireEcarts(int []X)
+	public static boolean shouldDiscretize(int []Y, int []X)
 	{
 		int []totopt=calculOption(X);
+		return X.length > 9 && totopt.length > 20*X.length/100;
+	}
+	
+	//Transforme une variable continue en variable discrète.
+	public static int[] faireEcarts(int []X, double splitValue)
+	{
 		int []Xbis=null;
-		if(X.length > 9)
+		Xbis = new int[X.length];
+		for (int i=0;i<Xbis.length;i++)
 		{
-			if (totopt.length > 20*X.length/100)
-			{
-				Xbis = new int[X.length];
-				for (int i=0;i<Xbis.length;i++)
-				{
-					if (Xbis[i]<(maximum(X)+minimum(X))/2) {Xbis[i]=1;}
-					else {Xbis[i]=2;}
-				}
-			}
-			else
-			{
-				Xbis=X;
-			}
-		}
-		else
-		{
-			Xbis=X;
+			if (Xbis[i]<splitValue) {Xbis[i]=1;}
+			else {Xbis[i]=2;}
 		}
 		return Xbis;
 	}

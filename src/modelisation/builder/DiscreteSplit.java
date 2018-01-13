@@ -1,7 +1,11 @@
-package modelisation.tree;
+package modelisation.builder;
 
 import java.util.Arrays;
 
+/**
+ * Splits a given column into N partitions, where N is the number of distinct values in the column. Each partition will
+ * have all the elements with the same value.
+ */
 public class DiscreteSplit extends Split {
     private String[] branchLabels;
 

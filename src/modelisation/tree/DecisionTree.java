@@ -15,7 +15,10 @@ public class DecisionTree {
     /**
      * Create a new DecisionTree node. <br/>
      *
-     * @param columnIndex the index of the column this node is splitting on; see {@link #getColumnIndex()}
+     * @param columnIndex     the index of the column this node is splitting on
+     * @param populationCount number of trainng set rows matched by this node
+     * @see #getColumnIndex()
+     * @see #getPopulationCount()
      */
     public DecisionTree(int columnIndex, int populationCount) {
         this.columnIndex = columnIndex;
@@ -26,7 +29,8 @@ public class DecisionTree {
      * Attach children to this node. Trying to attach children to a node which already
      * has children will result in an {@link IllegalStateException}.
      *
-     * @param children a map of branch labels to child nodes; see {@link #getBranchLabel()}
+     * @param children a map of branch labels to child nodes
+     * @see #getBranchLabel()
      */
     public void setChildren(@NotNull HashMap<String, DecisionTree> children) {
         if (!this.children.isEmpty()) {
@@ -46,8 +50,9 @@ public class DecisionTree {
     /**
      * Attach this node to its parent node.
      *
-     * @param parent the
-     * @param branchLabel this node's branch label; see {@link #getBranchLabel()}
+     * @param parent      the
+     * @param branchLabel this node's branch label
+     * @see #getBranchLabel()
      */
     private void setParent(@NotNull DecisionTree parent, @NotNull String branchLabel) {
         if (this.parent != null) {
@@ -58,11 +63,11 @@ public class DecisionTree {
     }
 
     /**
-     * <p>Each node in the decision tree splits the data set lines into two or more partitions based on some splitting
-     * criteria applied to a certain column. <br/>
-     *
+     * Each node in the decision tree splits the data set lines into two or more partitions based on some splitting
+     * criteria applied to a certain column.
+     * <p>
      * The same column can be encountered multiple times when traversing the tree from root to leaf, but this should
-     * only happen if the column has continous values.</p>
+     * only happen if the column has continuous values.
      *
      * @return the index of the column this node is splitting on.
      */
@@ -71,13 +76,13 @@ public class DecisionTree {
     }
 
     /**
-     * <p>The partiotion label that was used to arrive at this node from its parent.</p>
-     *
+     * The partiotion label that was used to arrive at this node from its parent.
+     * <p>
      * Example 1: if a node splits on column A with continous values between 10 and 100, it might have
-     *  two children with branch labels <code>"&lt;40"</code> and <code>"&gt;=40"</code>. <br/>
-     *
+     * two children with branch labels <code>"&lt;40"</code> and <code>"&gt;=40"</code>. <br/>
+     * <p>
      * Example 2: a node that splits on column B with three possible values, `a`, `b`, `c`, it might have
-     *  three children, whose branch labels will be <code>"a", "b", "c"</code> respectively
+     * three children, whose branch labels will be <code>"a", "b", "c"</code> respectively
      *
      * @return this node's branch label, or null if it is the root node
      */

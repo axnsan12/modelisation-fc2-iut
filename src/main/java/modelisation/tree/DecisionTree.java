@@ -1,7 +1,8 @@
 package modelisation.tree;
 
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import java.util.*;
 
@@ -32,7 +33,7 @@ public class DecisionTree {
      * @param children a map of branch labels to child nodes
      * @see #getBranchLabel()
      */
-    public void setChildren(@NotNull HashMap<String, DecisionTree> children) {
+    public void setChildren(@NonNull HashMap<String, DecisionTree> children) {
         if (!this.children.isEmpty()) {
             throw new IllegalStateException("this node already has children attached");
         }
@@ -54,7 +55,7 @@ public class DecisionTree {
      * @param branchLabel this node's branch label
      * @see #getBranchLabel()
      */
-    private void setParent(@NotNull DecisionTree parent, @NotNull String branchLabel) {
+    private void setParent(@NonNull DecisionTree parent, @NonNull String branchLabel) {
         if (this.parent != null) {
             throw new IllegalStateException("this node is already attached to a parent");
         }

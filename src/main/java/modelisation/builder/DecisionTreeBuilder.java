@@ -1,8 +1,8 @@
 package modelisation.builder;
 
-import com.sun.istack.internal.Nullable;
 import modelisation.Indicateurs;
 import modelisation.tree.DecisionTree;
+import org.eclipse.jdt.annotation.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -233,8 +233,8 @@ public class DecisionTreeBuilder implements Cloneable {
     }
 
     /**
-     * Check if an array is homogenous - i.e. if there is any value which occurs more often than
-     * config.homogenityThreshold (as a percentage).
+     * Check if an array is homogenous - i.e. if there is any single value
+     * which satisfies {@link Configuration#getHomogenityThreshold()}.
      *
      * @param column array to check for homogenity
      * @return true if {@code column} is homogenous

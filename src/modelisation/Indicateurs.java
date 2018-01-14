@@ -92,7 +92,7 @@ public class Indicateurs {
 	public static boolean shouldDiscretize(int []X, int nblig,int pourcentage)
 	{
 		int []totopt=calculOption(X);
-		return X.length > nblig && totopt.length > 20*X.length/100;
+		return X.length > nblig && totopt.length > pourcentage*X.length/100;
 	}
 	
 	//Transforme une variable continue en variable discrète.

@@ -2,6 +2,8 @@ package modelisation.builder;
 
 import modelisation.Indicateurs;
 import modelisation.TrainingData;
+import modelisation.builder.strategies.Chi2SplittingStrategy;
+import modelisation.builder.strategies.SplittingStrategy;
 import modelisation.tree.DecisionTree;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -14,7 +16,8 @@ public class DecisionTreeBuilder {
             .withDiscreteMaxPercentage(20)
             .withMinNodeSize(3)
             .withMinSplitSize(7)
-            .withHomogenityThreshold(75);
+            .withHomogenityThreshold(75)
+            .withSplittingStrategy(new Chi2SplittingStrategy());
 
     protected TrainingData trainingData;
     protected int idColumnIndex, targetColumnIndex;
@@ -61,14 +64,14 @@ public class DecisionTreeBuilder {
             if (columnIndex != idColumnIndex && columnIndex != targetColumnIndex) {
                 final Split split;
                 int[] column = data[columnIndex];
-                if (Indicateurs.shouldDiscretize(data[columnIndex], config.getContinuousMinLines(), config.getDiscreteMaxPercentage())) {
-                    double splitValue = Indicateurs.getSplitValue(data[columnIndex]);
-                    column = Indicateurs.faireEcarts(column, splitValue, config.getContinuousMinLines(), config.getDiscreteMaxPercentage());
+                if (shouldDiscretize(column)) {
+                    double splitValue = chooseSplitValue(column);
+                    column = Arrays.stream(column).map(val -> (val < splitValue ? 0 : 1)).toArray();
                     split = new ThresholdSplit(splitValue);
                 } else {
                     split = new DiscreteSplit();
                 }
-                double score = evaluateSplit(data[targetColumnIndex], column);
+                double score = config.getSplittingStrategy().evaluateSplit(data[targetColumnIndex], column);
                 splits.add(new SplitScore(columnIndex, split, score));
             }
         }
@@ -78,7 +81,7 @@ public class DecisionTreeBuilder {
             return null;
         }
 
-        return chooseBestSplit(splits);
+        return config.getSplittingStrategy().chooseBestSplit(splits, sc -> sc.score);
     }
 
     /**
@@ -142,12 +145,14 @@ public class DecisionTreeBuilder {
     protected DecisionTree buildTree(int[][] data) {
         checkInputData(data, idColumnIndex, targetColumnIndex);
         int[] targetColumn = data[targetColumnIndex];
+        String targetColumnName = trainingData.getColumn(targetColumnIndex).header;
 
         // we only try a split if the dataset is not too small and if it is not already homogeneous
         if (data[0].length >= config.getMinSplitSize() && !isHomogeneous(targetColumn)) {
             SplitScore bestSplit = chooseBestSplit(data);
             if (bestSplit != null) {
-                DecisionTree result = new DecisionTree(bestSplit.columnIndex, data[0].length);
+                String columnName = trainingData.getColumn(bestSplit.columnIndex).header;
+                DecisionTree result = new DecisionTree(bestSplit.columnIndex, columnName, data);
                 LinkedHashMap<String, DecisionTree> children = getChildren(data, bestSplit);
 
                 if (children != null) {
@@ -158,32 +163,35 @@ public class DecisionTreeBuilder {
         }
 
         // if no split can be made, return a terminal node
-        return new DecisionTree(targetColumnIndex, data[0].length);
+        return new DecisionTree(targetColumnIndex, targetColumnName, data);
     }
 
     /**
-     * Choose the best split from a collection of splits scored by {@link #evaluateSplit(int[], int[])}.
+     * Decide if the given column should be discretized before being scored. Generally this applies to
+     * cases where the scoring function expects discrete/categorical values but the column has too many
+     * distinct values and can be conisdered "continuous".
+     *
+     * @param column column in question
+     * @return true if the column should be discretized before applying
+     *  {@link SplittingStrategy#evaluateSplit(int[], int[])}
+     * @see #chooseSplitValue(int[])
+     */
+    protected boolean shouldDiscretize(int[] column) {
+        return Indicateurs.shouldDiscretize(column, config.getContinuousMinLines(), config.getDiscreteMaxPercentage());
+    }
+
+    /**
+     * For a continous-valued column that needs to be reduced to a discrete-valued column,
+     * choose an appropriate value to split on.
      * <p>
-     * The score returned by {@link #evaluateSplit(int[], int[])} is accesible via {@link SplitScore#score}.
+     * A column is reduced by choosing a value to split on, and classing the column in two categories -
+     * <em>below</em> the split value and <em>equal or above</em> the split value.
      *
-     * @param splits an array of possible splits to be compared
-     * @return the best scoring split
+     * @param column continuous column
+     * @return desired split value
      */
-    protected SplitScore chooseBestSplit(Collection<SplitScore> splits) {
-        return splits.stream().min(Comparator.comparingDouble(s -> s.score))
-                .orElseThrow(() -> new IllegalArgumentException("empty splits array"));
-    }
-
-    /**
-     * Return a score for the possible prediction accuracy gains against `targetColumn`
-     * by introducing a splitter node on the given `splitColumn`.
-     *
-     * @param targetColumn column containing the values to classify/predict
-     * @param splitColumn  column containing discrete values to make a split decision on
-     * @return a split score as interpreted by {@link #chooseBestSplit(Collection)}
-     */
-    protected double evaluateSplit(int[] targetColumn, int[] splitColumn) {
-        return Indicateurs.gini(targetColumn, splitColumn);
+    protected double chooseSplitValue(int[] column) {
+        return Indicateurs.getSplitValue(column);
     }
 
     public static class Configuration implements Cloneable {
@@ -192,6 +200,7 @@ public class DecisionTreeBuilder {
         private int minNodeSize;
         private int minSplitSize;
         private int homogenityThreshold;
+        private SplittingStrategy splittingStrategy;
 
         private static int requirePercentage(int value) {
             if (value < 0 || value > 100) {
@@ -316,11 +325,27 @@ public class DecisionTreeBuilder {
             result.homogenityThreshold = requirePercentage(homogenityThreshold);
             return result;
         }
+
+        /**
+         * Scoring function for deciding how to create split nodes when building the decision tree.
+         */
+        public SplittingStrategy getSplittingStrategy() {
+            return splittingStrategy;
+        }
+
+        /**
+         * @see #getSplittingStrategy()
+         */
+        public Configuration withSplittingStrategy(SplittingStrategy splittingStrategy) {
+            Configuration result = this.clone();
+            result.splittingStrategy = Objects.requireNonNull(splittingStrategy);
+            return result;
+        }
     }
 
     /**
      * Stores the {@link #score} of splitting column #{@link #columnIndex} using {@link #split}, as calculated by
-     * {@link #evaluateSplit(int[], int[])}.
+     * {@link SplittingStrategy#evaluateSplit(int[], int[])}.
      */
     protected static class SplitScore {
         public final int columnIndex;

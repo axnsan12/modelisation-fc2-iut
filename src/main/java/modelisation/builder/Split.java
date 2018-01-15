@@ -44,9 +44,9 @@ public abstract class Split {
             // each leaf will have the same number of columns as the input data, but only `leafSize[leafIndex]` rows
             for (int leafColumnIndex = 0; leafColumnIndex < data.length; ++leafColumnIndex) {
                 leaves[leafIndex][leafColumnIndex] = new int[leafSize[leafIndex]];
-                // leafSize will be re-used below to keep track of the first free row index for each leaf
-                leafSize[leafIndex] = 0;
             }
+            // leafSize will be re-used below to keep track of the first free row index for each leaf
+            leafSize[leafIndex] = 0;
         }
 
         for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex) {

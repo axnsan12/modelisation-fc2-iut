@@ -142,6 +142,16 @@ public class TrainingData {
     }
 
     /**
+     * Get information about a single column in the dataset.
+     *
+     * @param index index of the desired column
+     * @return target column
+     */
+    public Column getColumn(int index) {
+        return columns.get(index);
+    }
+
+    /**
      * Data class for holding information about a column.
      */
     public static class Column {

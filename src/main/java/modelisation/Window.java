@@ -2,30 +2,24 @@ package modelisation;
 
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Callback;
+import modelisation.io.CsvDataReader;
 
 import java.io.*;
-import java.util.StringTokenizer;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 public class Window extends Application {
-	
-	ObservableList<String> entête = FXCollections.observableArrayList(); //liste nom colonnes
-	ObservableList<ObservableList> données = FXCollections.observableArrayList(); //liste contenue CSV données
-	
-	
-	TableView<ObservableList> tableView; //tableau pour stocker les données
+    TableView<String[]> tableView; //tableau pour stocker les données
 
     public static void main(String[] args) {
         launch(args);
@@ -33,152 +27,122 @@ public class Window extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-    	
-    	
-    	 // Creation Menubar
+
+
+        // Creation Menubar
         MenuBar menuBar = new MenuBar();
-        
+
         // Creation menus
         Menu fichierMenu = new Menu("Fichier");
         Menu fonctionsMenu = new Menu("Fonctions");
         Menu aideMenu = new Menu("Aide");
-        
+
         // Creation menu item
         MenuItem nouveauItem = new MenuItem("Nouveau");
         MenuItem ouvertureFichierItem = new MenuItem("Ouvrir fichier CSV");
         MenuItem enregistreFichierItem = new MenuItem("Enregistrer arbre");
         MenuItem quitterItem = new MenuItem("Quitter");
-        
+
         MenuItem giniItem = new MenuItem("coefficient de Gini");
         MenuItem khideuxItem = new MenuItem("khi-deux");
         MenuItem entropieItem = new MenuItem("entropie");
-        
+
         // Ajout menu item au menu
-        fichierMenu.getItems().addAll(nouveauItem, ouvertureFichierItem,enregistreFichierItem, quitterItem);
-        fonctionsMenu.getItems().addAll(giniItem, khideuxItem,entropieItem);
-        
+        fichierMenu.getItems().addAll(nouveauItem, ouvertureFichierItem, enregistreFichierItem, quitterItem);
+        fonctionsMenu.getItems().addAll(giniItem, khideuxItem, entropieItem);
+
         // Ajout du menu à la barre de Menu
         menuBar.getMenus().addAll(fichierMenu, fonctionsMenu, aideMenu);
-        
-        
+
+
         // Creation tableau
-    	tableView = new TableView();
-    	
-    	 // Set Accelerator for Exit MenuItem.
+        tableView = new TableView<>();
+
+        // Set Accelerator for Exit MenuItem.
         quitterItem.setAccelerator(KeyCombination.keyCombination("Ctrl+X"));
-         
+
         // Quand l'utilisateur clic sur le bouteau quitter
         quitterItem.setOnAction(new EventHandler<ActionEvent>() {
-         
+
             @Override
             public void handle(ActionEvent event) {
                 System.exit(0);
             }
         });
-        
-      //recuperation CSV
-        ouvertureFichierItem.setOnAction(new EventHandler<ActionEvent>() {
-      	  
-        	public void handle(ActionEvent t){
-        		// ouvre une boite de dialogue pour la selection d'un fichier
-    			FileChooser fileChooser = new FileChooser(); 
-    			// extension fichier
-    			FileChooser.ExtensionFilter extFilterCSV = new FileChooser.ExtensionFilter("CSV files(*.csv)","*.csv"); 
-    			
-    			fileChooser.getExtensionFilters().addAll(extFilterCSV);
 
-    			File csv = fileChooser.showOpenDialog(null);
-    			// si le csv existe lire le CSV
-    			if(csv!=null) {
-    				lireCSV(csv);
-        	}
-        }
-        
-        private void lireCSV(File file) {
-        	try {
-        		// si le fichier existe et qu'il peut être lu
-        		if(verificationFichier(file)) {
-        			FileInputStream in = new FileInputStream(file);
-        			InputStreamReader sr = new InputStreamReader(in, "UTF-8");
-        			BufferedReader br = new BufferedReader(sr);
-        			
-        			String ligne; // lignes du CSV (ligne d'entête "nom colonnes" nom compris)
-        			boolean header = true;
-        			while((ligne = br.readLine()) != null) {
-        				// découpe la string en une suite de mots séparés par le ";"
-        				StringTokenizer séparateur = new StringTokenizer(ligne, ";");
-        				ObservableList<String>ligneListe = FXCollections.observableArrayList();
-        				
-        				if(header) {
-        					// tant que j'ai encore un séparateur ";"
-        					while(séparateur.hasMoreTokens()) {
-        						entête.add(séparateur.nextToken());
-        					}
-        					header = false;
-        				} else {
-        					while (séparateur.hasMoreTokens()) {
-        						ligneListe.add(séparateur.nextToken());
-        					}
-        					données.add(ligneListe);
-        					
-        				}
-        			}
-        		} else {
-        			System.out.println("Le fichier n'existe pas / erreur de lecture.");
-        		}
-        	} catch (FileNotFoundException e) {
-        		System.out.println("FileNotFoundException :"+e.getMessage());
-        	} catch (IOException e) {
-        		System.out.println("IOException:"+e.getMessage());
-        	}
-        	
-        	creationTableau();
-        }
-    });
-    
-        
-        
+        //recuperation CSV
+        ouvertureFichierItem.setOnAction(new EventHandler<ActionEvent>() {
+
+            public void handle(ActionEvent t) {
+                // ouvre une boite de dialogue pour la selection d'un fichier
+                FileChooser fileChooser = new FileChooser();
+                // extension fichier
+                FileChooser.ExtensionFilter extFilterCSV = new FileChooser.ExtensionFilter("CSV files(*.csv)", "*.csv");
+
+                fileChooser.getExtensionFilters().addAll(extFilterCSV);
+
+                File csv = fileChooser.showOpenDialog(null);
+                // si le csv existe lire le CSV
+                if (csv != null) {
+                    lireCSV(csv);
+                }
+            }
+
+            private void lireCSV(File file) {
+                try {
+                    InputStreamReader fileReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+                    TrainingData data = new CsvDataReader(fileReader, ',').read();
+                    creationTableau(data);
+                } catch (FileNotFoundException e) {
+                    System.out.println("FileNotFoundException :" + e.getMessage());
+                } catch (IOException e) {
+                    System.out.println("IOException:" + e.getMessage());
+                }
+            }
+        });
+
+
         //sauvegarde de l'arbre
         enregistreFichierItem.setOnAction(new EventHandler<ActionEvent>() {
-        	  
+
             @Override
             public void handle(ActionEvent event) {
                 FileChooser fileChooser = new FileChooser();
-    
+
                 // filtre extension
                 FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.txt");
                 fileChooser.getExtensionFilters().add(extFilter);
-                
+
                 // boîte de dialogue sauvegarde
                 File save = fileChooser.showSaveDialog(primaryStage);
             }
         });
-        
-      //test arbre
-        TreeView<String> treeView = new TreeView<String>(); 
-         
+
+        //test arbre
+        TreeView<String> treeView = new TreeView<String>();
+
         final TreeItem<String> trainItem = new TreeItem<>("train");
         trainItem.getChildren().setAll(new TreeItem("locomotive"));
         trainItem.setExpanded(true);
-        
+
         final TreeItem<String> voitureItem = new TreeItem<>("voiture");
         voitureItem.getChildren().setAll(new TreeItem("toyota"));
         voitureItem.setExpanded(true);
-        
+
         final TreeItem<String> treeRoot = new TreeItem<>("vehicules");
         treeRoot.setExpanded(true);
-        treeRoot.getChildren().setAll(trainItem,voitureItem);
+        treeRoot.getChildren().setAll(trainItem, voitureItem);
         treeView.setRoot(treeRoot);
-        
+
         // supprimer noeuds arbre
         Button supprimer = new Button("Supprimer Noeuds");
         supprimer.setOnAction(new EventHandler<ActionEvent>() {
-     	   public void handle(ActionEvent e) {
-     		   TreeItem delete = (TreeItem)treeView.getSelectionModel().getSelectedItem();
-     		   boolean suppr = delete.getParent().getChildren().remove(delete);
-     		   System.out.println("suppression");
-     	   }
-     	   
+            public void handle(ActionEvent e) {
+                TreeItem delete = (TreeItem) treeView.getSelectionModel().getSelectedItem();
+                boolean suppr = delete.getParent().getChildren().remove(delete);
+                System.out.println("suppression");
+            }
+
         });
         
         
@@ -209,47 +173,33 @@ public class Window extends Application {
         primaryStage.setTitle("Arbre");
         primaryStage.setScene(scene);
         primaryStage.show();*/
-        
+
         BorderPane root = new BorderPane();
         root.setTop(menuBar);
         root.setLeft(tableView);
-       	root.setRight(treeView);
+        root.setRight(treeView);
         root.setCenter(supprimer);
-    	Scene scene = new Scene(root, 400, 200);
+        Scene scene = new Scene(root, 400, 200);
         primaryStage.setTitle("Arbre");
         primaryStage.setScene(scene);
         primaryStage.show();
-        
-        
-        
-       
+
+
     }
-    
-    private void creationTableau() {
-    	int numeroColonne = 0;
-    	TableColumn[] colonne = new TableColumn[entête.size()]; 
-    	for (String nomColonne : entête) {
-    		final int indice = numeroColonne;
-    		colonne[numeroColonne] = new TableColumn(nomColonne);
-    		colonne[numeroColonne].setCellValueFactory(
-    				new Callback<CellDataFeatures<ObservableList, String>, ObservableValue<String>>() {
-    					public ObservableValue<String> call(CellDataFeatures<ObservableList, String> param){
-    						return new SimpleStringProperty(param.getValue().get(indice).toString());
-    					}
-    				});
-    		numeroColonne++;
-    	}
-    	tableView.getColumns().addAll(colonne);
-    	tableView.setItems(données); // ajouts des données au tableView
-    }
-    
-    private boolean verificationFichier(File file) {
-    	if(file.exists()) {
-    		if(file.isFile() && file.canRead()) {
-    			return true;
-    		}
-    		
-    	}
-    	return false;
+
+    private void creationTableau(TrainingData data) {
+        ArrayList<TableColumn<String[], String>> columns = new ArrayList<>(data.getColumns().size());
+        String[] headers = data.getHeaders();
+        for (int columnIndex = 0; columnIndex < data.getColumns().size(); ++columnIndex) {
+            int finalColumnIndex = columnIndex;
+            TableColumn<String[], String> tableColumn = new TableColumn<>(headers[columnIndex]);
+            tableColumn.setCellValueFactory(row -> new SimpleStringProperty(row.getValue()[finalColumnIndex]));
+            columns.add(tableColumn);
+        }
+
+        ObservableList<String[]> rowIndexes = FXCollections.observableArrayList();
+        rowIndexes.addAll(data.getRawLines());
+        tableView.getColumns().addAll(columns);
+        tableView.setItems(rowIndexes); // ajouts des données au tableView
     }
 }

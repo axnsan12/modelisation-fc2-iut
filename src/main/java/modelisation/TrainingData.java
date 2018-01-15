@@ -4,12 +4,19 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TrainingData {
+    private String[] headers;
+    private List<String[]> rawLines;
     private ArrayList<Column> columns;
+    private Map<String, Column> columnsByHeader;
 
     public TrainingData(@NonNull String[] headers, @NonNull List<String[]> lines) {
         checkInput(Objects.requireNonNull(headers), Objects.requireNonNull(lines));
+        this.headers = headers;
+        this.rawLines = lines;
+
         columns = new ArrayList<>(headers.length);
         for (int col = 0; col < lines.get(0).length; ++col) {
             int[] data = new int[lines.size()];
@@ -22,6 +29,28 @@ public class TrainingData {
 
             columns.add(new Column(col, headers[col], labels, data));
         }
+
+        columnsByHeader = columns.stream().collect(Collectors.toMap(c -> c.header, c -> c));
+    }
+
+    /**
+     * Return the array of column headers for this dataset.
+     * This is the same array passed to {@link #TrainingData(String[], List)}.
+     *
+     * @return
+     */
+    public String[] getHeaders() {
+        return headers;
+    }
+
+    /**
+     * Return the raw list of lines in this dataset.
+     * This is the same list passed to {@link #TrainingData(String[], List)}.
+     *
+     * @return
+     */
+    public List<String[]> getRawLines() {
+        return rawLines;
     }
 
     private void checkInput(String[] headers, List<String[]> lines) {
@@ -98,6 +127,16 @@ public class TrainingData {
     }
 
     /**
+     * Get information about a single column in the dataset.
+     *
+     * @param header header name of the desired column
+     * @return target column
+     */
+    public Column getColumn(String header) {
+        return columnsByHeader.get(header);
+    }
+
+    /**
      * Data class for holding information about a column.
      */
     public static class Column {
@@ -136,6 +175,17 @@ public class TrainingData {
             this.header = header;
             this.valueLabels = valueLabels;
             this.data = data;
+        }
+
+        /**
+         * Return the item at the given index as a string, taking {@link #valueLabels} into account.
+         *
+         * @param index row index
+         * @return value as string
+         */
+        public String getValueAsString(int index) {
+            int value = data[index];
+            return valueLabels != null ? valueLabels[value] : String.valueOf(value);
         }
     }
 }

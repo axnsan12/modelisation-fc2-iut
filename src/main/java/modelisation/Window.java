@@ -14,8 +14,10 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import modelisation.io.CsvDataReader;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Window extends Application {
@@ -90,8 +92,7 @@ public class Window extends Application {
 
             private void lireCSV(File file) {
                 try {
-                    InputStreamReader fileReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
-                    TrainingData data = new CsvDataReader(fileReader, ',').read();
+                    TrainingData data = new CsvDataReader(new FileInputStream(file)).read();
                     creationTableau(data);
                 } catch (FileNotFoundException e) {
                     System.out.println("FileNotFoundException :" + e.getMessage());
@@ -199,7 +200,7 @@ public class Window extends Application {
 
         ObservableList<String[]> rowIndexes = FXCollections.observableArrayList();
         rowIndexes.addAll(data.getRawLines());
-        tableView.getColumns().addAll(columns);
+        tableView.getColumns().setAll(columns);
         tableView.setItems(rowIndexes); // ajouts des données au tableView
     }
 }

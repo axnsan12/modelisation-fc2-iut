@@ -58,6 +58,11 @@ public class TrainingData {
             throw new IllegalArgumentException("empty trainingData set");
         }
 
+        if (headers.length < 3) {
+            throw new IllegalArgumentException("dataset must have at least 3 columns - one ID column, " +
+                    "one target column and one or more data columns");
+        }
+
         for (String[] line : lines) {
             if (line.length != headers.length) {
                 throw new IllegalArgumentException("length of all lines must match header");

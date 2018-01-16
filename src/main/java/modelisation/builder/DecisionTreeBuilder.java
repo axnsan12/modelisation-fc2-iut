@@ -17,6 +17,7 @@ public class DecisionTreeBuilder {
             .withMinNodeSize(3)
             .withMinSplitSize(7)
             .withHomogenityThreshold(75)
+            .withMaxDepth(3)
             .withSplittingStrategy(new Chi2SplittingStrategy());
 
     protected TrainingData trainingData;
@@ -91,7 +92,7 @@ public class DecisionTreeBuilder {
      * @see DecisionTree#getBranchLabel()
      */
     @Nullable
-    private LinkedHashMap<String, DecisionTree> getChildren(int[][] data, SplitScore split) {
+    private LinkedHashMap<String, DecisionTree> getChildren(int[][] data, SplitScore split, int depth) {
         LinkedHashMap<String, DecisionTree> children = new LinkedHashMap<>();
         for (Map.Entry<String, int[][]> entry : split.split.applySplit(data, split.columnIndex).entrySet()) {
             String branchLabel = entry.getKey();
@@ -101,7 +102,7 @@ public class DecisionTreeBuilder {
                         " has too few results (" + childData[0].length + " vs needed " + config.getMinNodeSize() + ")");
                 return null;
             }
-            children.put(branchLabel, buildTree(childData));
+            children.put(branchLabel, buildTree(childData, depth + 1));
         }
 
         return children;
@@ -132,7 +133,7 @@ public class DecisionTreeBuilder {
         for (TrainingData.Column column : columns) {
             data[column.index] = Arrays.copyOf(column.data, column.data.length);
         }
-        return buildTree(data);
+        return buildTree(data, 0);
     }
 
     /**
@@ -140,20 +141,21 @@ public class DecisionTreeBuilder {
      *
      * @param data input data as a column-indexed matrix, i.e. an array of columns - data[i][j] is the `j`th row
      *             of column `i`, and `data.length` is the number of columns
+     * @param depth the current depth in the tree generation process; the root starts at depth 0
      * @return the built decision tree
      */
-    protected DecisionTree buildTree(int[][] data) {
+    protected DecisionTree buildTree(int[][] data, int depth) {
         checkInputData(data, idColumnIndex, targetColumnIndex);
         int[] targetColumn = data[targetColumnIndex];
         String targetColumnName = trainingData.getColumn(targetColumnIndex).header;
 
         // we only try a split if the dataset is not too small and if it is not already homogeneous
-        if (data[0].length >= config.getMinSplitSize() && !isHomogeneous(targetColumn)) {
+        if (data[0].length >= config.getMinSplitSize() && !isHomogeneous(targetColumn) && depth <= config.getMaxDepth()) {
             SplitScore bestSplit = chooseBestSplit(data);
             if (bestSplit != null) {
                 String columnName = trainingData.getColumn(bestSplit.columnIndex).header;
                 DecisionTree result = new DecisionTree(bestSplit.columnIndex, columnName, data);
-                LinkedHashMap<String, DecisionTree> children = getChildren(data, bestSplit);
+                LinkedHashMap<String, DecisionTree> children = getChildren(data, bestSplit, depth);
 
                 if (children != null) {
                     result.setChildren(children);
@@ -200,6 +202,7 @@ public class DecisionTreeBuilder {
         private int minNodeSize;
         private int minSplitSize;
         private int homogenityThreshold;
+        private int maxDepth;
         private SplittingStrategy splittingStrategy;
 
         private static int requirePercentage(int value) {
@@ -323,6 +326,23 @@ public class DecisionTreeBuilder {
         public Configuration withHomogenityThreshold(int homogenityThreshold) {
             Configuration result = this.clone();
             result.homogenityThreshold = requirePercentage(homogenityThreshold);
+            return result;
+        }
+
+        /**
+         * Limits the maximum height of the generated tree. A maxDepth of 0 will
+         * generate a single terminal node containing all rows.
+         */
+        public int getMaxDepth() {
+            return maxDepth;
+        }
+
+        /**
+         * See {@link #getMaxDepth()}.
+         */
+        public Configuration withMaxDepth(int maxDepth) {
+            Configuration result = this.clone();
+            result.maxDepth = requireNonNegative(maxDepth);
             return result;
         }
 

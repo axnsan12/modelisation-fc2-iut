@@ -1,7 +1,8 @@
 package modelisation.builder.strategies;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Random;
 import java.util.function.ToDoubleFunction;
 
@@ -12,11 +13,10 @@ public class RandomSplittingStrategy implements SplittingStrategy {
         this.random = random;
     }
 
-
+    @NonNull
     @Override
     public <S> S chooseBestSplit(Collection<? extends S> splits, ToDoubleFunction<S> score) {
-        return splits.stream().max(Comparator.comparingDouble(score))
-                .orElseThrow(() -> new IllegalArgumentException("empty splits array"));
+        return SplittingStrategy.max(splits, score);
     }
 
     @Override

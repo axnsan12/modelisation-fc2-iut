@@ -1,8 +1,10 @@
 package modelisation.builder.strategies;
 
 import modelisation.builder.DecisionTreeBuilder;
+import org.eclipse.jdt.annotation.NonNull;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.function.ToDoubleFunction;
 
 /**
@@ -12,16 +14,34 @@ import java.util.function.ToDoubleFunction;
  */
 public interface SplittingStrategy {
     /**
+     * Shortcut for choosing the highest element from a collection according to some score.
+     * Same signature as {@link #chooseBestSplit(Collection, ToDoubleFunction)}.
+     */
+    static <S> S max(Collection<? extends S> splits, ToDoubleFunction<S> scorer) {
+        return splits.stream().max(Comparator.comparingDouble(scorer))
+                .orElseThrow(() -> new IllegalArgumentException("empty splits array"));
+    }
+
+    /**
+     * Shortcut for choosing the lowest element from a collection according to some score.
+     * Same signature as {@link #chooseBestSplit(Collection, ToDoubleFunction)}.
+     */
+    static <S> S min(Collection<? extends S> splits, ToDoubleFunction<S> scorer) {
+        return splits.stream().min(Comparator.comparingDouble(scorer))
+                .orElseThrow(() -> new IllegalArgumentException("empty splits array"));
+    }
+
+    /**
      * Choose the best split from a collection of splits scored by {@link #evaluateSplit(int[], int[])}.
      * <p>
      * The score returned by {@link #evaluateSplit(int[], int[])} is accesible via {@code score(S)}.
      *
-     * @param splits an array of possible splits to be compared
+     * @param splits a collection of possible splits to be compared; must not be empty
      * @param score  functor to extract the score from a split
      * @param <S>    type of split
      * @return the best scoring split
      */
-    <S> S chooseBestSplit(Collection<? extends S> splits, ToDoubleFunction<S> score);
+    @NonNull <S> S chooseBestSplit(Collection<? extends S> splits, ToDoubleFunction<S> score);
 
     /**
      * Return a score for the possible prediction accuracy gains against `targetColumn`

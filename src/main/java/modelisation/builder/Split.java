@@ -3,6 +3,7 @@ package modelisation.builder;
 import modelisation.tree.DecisionTree;
 
 import java.util.LinkedHashMap;
+import java.util.Optional;
 
 /**
  * Implements a data partitioning strategy - given a matrix of data and a pivot column, group the rows into
@@ -11,19 +12,22 @@ import java.util.LinkedHashMap;
 public abstract class Split {
     /**
      * Split the given dataset into at least two partitions.
+     * <p>
+     * This implementation uses {@link #getBranchLabels(int[])} and {@link #getBranchIndex(int)}
+     * to determine the partition of each element.
      *
-     * @param data        input data as a column-indexed matrix, i.e. an array of columns - data[i][j] is the `j`th row
-     *                    of column `i`, and `data.length` is the number of columns
-     * @param columnIndex index of the column which contains the values to split against
-     * @return a mapping of branch labels to split dataset partition
+     * @param data             input data as a column-indexed matrix, i.e. an array of columns - data[i][j] is
+     *                         the `j`th row of column `i`, and `data.length` is the number of columns
+     * @param splitColumnIndex index of the column which contains the values to split against
+     * @return a mapping of branch labels to split dataset partition, or null if the split cannot be applied
      * @see DecisionTree#getBranchLabel()
      */
-    public LinkedHashMap<String, int[][]> applySplit(int[][] data, int columnIndex) {
+    public Optional<LinkedHashMap<String, int[][]>> applySplit(int[][] data, int splitColumnIndex) {
         int rowCount = data[0].length;
-        String[] labels = getBranchLabels(data[columnIndex]);
+        String[] labels = getBranchLabels(data[splitColumnIndex]);
         int leafCount = labels.length;
         if (leafCount < 2) {
-            throw new IllegalStateException("split failed unexpectedly");
+            return Optional.empty();
         }
 
         // for each leaf, store the number of rows it will have into `leafSize`
@@ -32,7 +36,7 @@ public abstract class Split {
         int[] targetLeaf = new int[rowCount];
 
         for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
-            int target = getBranchIndex(data[columnIndex][rowIndex]);
+            int target = getBranchIndex(data[splitColumnIndex][rowIndex]);
             leafSize[target] += 1;
             targetLeaf[rowIndex] = target;
         }
@@ -54,7 +58,7 @@ public abstract class Split {
             int leafIndex = targetLeaf[rowIndex];
             int leafRowIndex = leafSize[leafIndex]++;
             for (int leafColumnIndex = 0; leafColumnIndex < data.length; ++leafColumnIndex) {
-                leaves[leafIndex][leafColumnIndex][leafRowIndex] = data[columnIndex][rowIndex];
+                leaves[leafIndex][leafColumnIndex][leafRowIndex] = data[leafColumnIndex][rowIndex];
             }
         }
 
@@ -62,7 +66,7 @@ public abstract class Split {
         for (int leafIndex = 0; leafIndex < leafCount; ++leafIndex) {
             result.put(labels[leafIndex], leaves[leafIndex]);
         }
-        return result;
+        return Optional.of(result);
     }
 
     /**

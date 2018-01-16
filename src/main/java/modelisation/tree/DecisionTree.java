@@ -37,14 +37,14 @@ public class DecisionTree {
      * @param children a map of branch labels to child nodes
      * @see #getBranchLabel()
      */
-    public void setChildren(@NonNull HashMap<String, DecisionTree> children) {
+    public void setChildren(@NonNull Map<String, DecisionTree> children) {
         if (!this.children.isEmpty()) {
             throw new IllegalStateException("this node already has children attached");
         }
         if (children.isEmpty()) {
             throw new IllegalArgumentException("empty child list is not allowed");
         }
-        for (HashMap.Entry<String, DecisionTree> entry : children.entrySet()) {
+        for (Map.Entry<String, DecisionTree> entry : children.entrySet()) {
             DecisionTree child = entry.getValue();
             String branchLabel = entry.getKey();
             child.setParent(this, branchLabel);

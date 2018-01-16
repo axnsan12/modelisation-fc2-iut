@@ -15,16 +15,11 @@ public class ThresholdSplit extends Split {
     @Override
     protected String[] getBranchLabels(int[] column) {
         // < threshold goes into leaf 0, >= threshold goes into leaf 1
-        return new String[] {"<" + threshold, ">=" + threshold};
+        return new String[]{"<" + threshold, ">=" + threshold};
     }
 
     @Override
     protected int getBranchIndex(int value) {
-        if (value < threshold) {
-            return 0;
-        }
-        else {
-            return 1;
-        }
+        return value < threshold ? 0 : 1;
     }
 }

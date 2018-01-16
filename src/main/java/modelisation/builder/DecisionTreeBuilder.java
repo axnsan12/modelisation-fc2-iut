@@ -5,6 +5,7 @@ import modelisation.TrainingData;
 import modelisation.builder.strategies.Chi2SplittingStrategy;
 import modelisation.builder.strategies.SplittingStrategy;
 import modelisation.tree.DecisionTree;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import java.util.*;
@@ -22,20 +23,35 @@ public class DecisionTreeBuilder {
 
     protected TrainingData trainingData;
     protected int idColumnIndex, targetColumnIndex;
+    protected Set<Integer> dataColumnIndexes;
     protected Configuration config;
 
-    public DecisionTreeBuilder(TrainingData trainingData, int idColumnIndex, int targetColumnIndex, Configuration config) {
+    /**
+     * @param trainingData      data to be used for training/building the tree
+     * @param idColumnIndex     index of the column which uniquely identifies rows in the dataset
+     * @param targetColumnIndex index of the column whose values must be predicted by the decision tree
+     * @param dataColumnIndexes optional; an array of indexes of columns to use for splitting when building the
+     *                          decision tree. Columns which are not included in this array will never appear as
+     *                          split nodes in the resulting tree. If {@code null}, all columns are conisdered included.
+     *                          MUST NOT include the ID and target columns and MUST have at least one element if given.
+     * @param config            configuration parameters for the tree builder; see {@link Configuration}
+     */
+    public DecisionTreeBuilder(TrainingData trainingData, int idColumnIndex, int targetColumnIndex, @Nullable Collection<Integer> dataColumnIndexes, Configuration config) {
         this.trainingData = trainingData;
         this.idColumnIndex = idColumnIndex;
         this.targetColumnIndex = targetColumnIndex;
         this.config = config;
+        if (dataColumnIndexes != null) {
+            this.dataColumnIndexes = new TreeSet<>(dataColumnIndexes);
+        } else {
+            this.dataColumnIndexes = trainingData.getColumns().stream()
+                    .filter(c -> c.index != idColumnIndex && c.index != targetColumnIndex)
+                    .map(c -> c.index)
+                    .collect(Collectors.toSet());
+        }
     }
 
-    public DecisionTreeBuilder(TrainingData trainingData, int idColumnIndex, int targetColumnIndex) {
-        this(trainingData, idColumnIndex, targetColumnIndex, DEFAULT_CONFIG);
-    }
-
-    private static void checkInputData(int[][] data, int idColumnIndex, int targetColumnIndex) throws IllegalArgumentException {
+    private static void checkInputData(int[][] data, int idColumnIndex, int targetColumnIndex, @Nullable Set<Integer> dataColumnIndexes) throws IllegalArgumentException {
         if (data == null || data.length == 0) {
             throw new IllegalArgumentException("data set must not be empty");
         }
@@ -50,28 +66,42 @@ public class DecisionTreeBuilder {
                 throw new IllegalArgumentException("all columns in the data set must be of the same size");
             }
         }
+        if (dataColumnIndexes != null) {
+            if (dataColumnIndexes.size() == 0) {
+                throw new IllegalArgumentException("dataColumnIndexes is empty");
+            }
+
+            for (int col : dataColumnIndexes) {
+                if (col < 0 || col >= data.length) {
+                    throw new IllegalArgumentException("data column index out of range");
+                }
+            }
+        }
     }
 
     /**
      * Given a data set, find the best (most discriminating) way to split it.
+     * Optionally take a set of column indexes to ignore.
      *
      * @return the best split, or null if no meaningful split can be made
      */
-    @Nullable
-    private SplitScore chooseBestSplit(int[][] data) {
+    private Optional<SplitScore> chooseBestSplit(int[][] data, @NonNull Set<Integer> ignoring) {
         ArrayList<SplitScore> splits = new ArrayList<>(data.length);
         // we go through all unused columns and calculate the split score for each
         for (int columnIndex = 0; columnIndex < data.length; ++columnIndex) {
-            if (columnIndex != idColumnIndex && columnIndex != targetColumnIndex) {
+            if (dataColumnIndexes.contains(columnIndex) && !ignoring.contains(columnIndex)) {
                 final Split split;
                 int[] column = data[columnIndex];
                 if (shouldDiscretize(column)) {
+                    // a column of continuous values may need to be transformed into classes before splitting metrics
+                    // can be applied to it; the algorithm used is a simple binary split on a chosen threshold value
                     double splitValue = chooseSplitValue(column);
-                    column = Arrays.stream(column).map(val -> (val < splitValue ? 0 : 1)).toArray();
                     split = new ThresholdSplit(splitValue);
+                    column = Arrays.stream(column).map(val -> val < splitValue ? 0 : 1).toArray();
                 } else {
                     split = new DiscreteSplit();
                 }
+
                 double score = config.getSplittingStrategy().evaluateSplit(data[targetColumnIndex], column);
                 splits.add(new SplitScore(columnIndex, split, score));
             }
@@ -79,10 +109,10 @@ public class DecisionTreeBuilder {
 
         if (splits.isEmpty()) {
             System.out.println("No more splits to make!");
-            return null;
+            return Optional.empty();
         }
 
-        return config.getSplittingStrategy().chooseBestSplit(splits, sc -> sc.score);
+        return Optional.of(config.getSplittingStrategy().chooseBestSplit(splits, sc -> sc.score));
     }
 
     /**
@@ -91,21 +121,24 @@ public class DecisionTreeBuilder {
      * @return mapping of branch labels to child nodes, or null if {@code split} cannot be applied
      * @see DecisionTree#getBranchLabel()
      */
-    @Nullable
-    private LinkedHashMap<String, DecisionTree> getChildren(int[][] data, SplitScore split, int depth) {
+    private Optional<LinkedHashMap<String, DecisionTree>> getChildren(int[][] data, SplitScore split, int depth) {
         LinkedHashMap<String, DecisionTree> children = new LinkedHashMap<>();
-        for (Map.Entry<String, int[][]> entry : split.split.applySplit(data, split.columnIndex).entrySet()) {
-            String branchLabel = entry.getKey();
-            int[][] childData = entry.getValue();
-            if (childData[0].length < config.getMinNodeSize()) {
-                System.out.println("skipping split of " + split.columnIndex + " because branch " + branchLabel +
-                        " has too few results (" + childData[0].length + " vs needed " + config.getMinNodeSize() + ")");
-                return null;
+        Optional<? extends Map<String, int[][]>> partitions = split.split.applySplit(data, split.columnIndex);
+
+        if (partitions.isPresent()) {
+            for (Map.Entry<String, int[][]> entry : partitions.get().entrySet()) {
+                String branchLabel = entry.getKey();
+                int[][] childData = entry.getValue();
+                if (childData[0].length < config.getMinNodeSize()) {
+                    System.out.println("skipping split of " + split.columnIndex + " because branch " + branchLabel +
+                            " has too few results (" + childData[0].length + " out of " + config.getMinNodeSize() + ")");
+                    break;
+                }
+                children.put(branchLabel, buildTree(childData, depth + 1));
             }
-            children.put(branchLabel, buildTree(childData, depth + 1));
         }
 
-        return children;
+        return children.size() >= 2 ? Optional.of(children) : Optional.empty();
     }
 
     /**
@@ -133,34 +166,39 @@ public class DecisionTreeBuilder {
         for (TrainingData.Column column : columns) {
             data[column.index] = Arrays.copyOf(column.data, column.data.length);
         }
+        checkInputData(data, idColumnIndex, targetColumnIndex, dataColumnIndexes);
         return buildTree(data, 0);
     }
 
     /**
      * Generate a decision tree from some input data.
      *
-     * @param data input data as a column-indexed matrix, i.e. an array of columns - data[i][j] is the `j`th row
-     *             of column `i`, and `data.length` is the number of columns
+     * @param data  input data as a column-indexed matrix, i.e. an array of columns - data[i][j] is the `j`th row
+     *              of column `i`, and `data.length` is the number of columns
      * @param depth the current depth in the tree generation process; the root starts at depth 0
      * @return the built decision tree
      */
     protected DecisionTree buildTree(int[][] data, int depth) {
-        checkInputData(data, idColumnIndex, targetColumnIndex);
         int[] targetColumn = data[targetColumnIndex];
         String targetColumnName = trainingData.getColumn(targetColumnIndex).header;
+        TreeSet<Integer> triedColumns = new TreeSet<>();
 
         // we only try a split if the dataset is not too small and if it is not already homogeneous
         if (data[0].length >= config.getMinSplitSize() && !isHomogeneous(targetColumn) && depth <= config.getMaxDepth()) {
-            SplitScore bestSplit = chooseBestSplit(data);
-            if (bestSplit != null) {
-                String columnName = trainingData.getColumn(bestSplit.columnIndex).header;
-                DecisionTree result = new DecisionTree(bestSplit.columnIndex, columnName, data);
-                LinkedHashMap<String, DecisionTree> children = getChildren(data, bestSplit, depth);
+            Optional<SplitScore> chosenSplit;
+            while ((chosenSplit = chooseBestSplit(data, triedColumns)).isPresent()) {
+                SplitScore split = chosenSplit.get();
+                String columnName = trainingData.getColumn(split.columnIndex).header;
+                DecisionTree result = new DecisionTree(split.columnIndex, columnName, data);
+                Optional<? extends Map<String, DecisionTree>> children = getChildren(data, split, depth);
 
-                if (children != null) {
-                    result.setChildren(children);
+                if (children.isPresent()) {
+                    result.setChildren(children.get());
                     return result;
                 }
+
+                // if getChildren returned null (split could not be applied), keep trying other columns
+                triedColumns.add(split.columnIndex);
             }
         }
 
@@ -175,7 +213,7 @@ public class DecisionTreeBuilder {
      *
      * @param column column in question
      * @return true if the column should be discretized before applying
-     *  {@link SplittingStrategy#evaluateSplit(int[], int[])}
+     * {@link SplittingStrategy#evaluateSplit(int[], int[])}
      * @see #chooseSplitValue(int[])
      */
     protected boolean shouldDiscretize(int[] column) {

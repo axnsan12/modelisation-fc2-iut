@@ -1,6 +1,7 @@
 package modelisation.tree;
 
 
+import modelisation.data.TrainingData;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -10,7 +11,7 @@ public class DecisionTree {
     private final int columnIndex;
     private final String columnName;
     private DecisionTree parent;
-    private final int[][] population;
+    private final TrainingData population;
     private String branchLabel;
     private final ArrayList<DecisionTree> children = new ArrayList<>();
 
@@ -19,11 +20,11 @@ public class DecisionTree {
      *
      * @param columnIndex the index of the column this node is splitting on
      * @param columnName  the name of the column this node is splitting on
-     * @param population  trainng set partition matched by this node; this should be a column-major matrix
+     * @param population  trainng set partition matched by this node
      * @see #getColumnIndex()
      * @see #getPopulationCount()
      */
-    public DecisionTree(int columnIndex, String columnName, int[][] population) {
+    public DecisionTree(int columnIndex, String columnName, TrainingData population) {
         this.columnIndex = columnIndex;
         this.columnName = columnName;
         this.population = population;
@@ -126,6 +127,6 @@ public class DecisionTree {
      * @return number of trainng set rows matched by this node
      */
     public int getPopulationCount() {
-        return population[0].length;
+        return population.size();
     }
 }

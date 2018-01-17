@@ -1,9 +1,16 @@
 package modelisation.builder;
 
+import modelisation.data.Column;
+import modelisation.data.TrainingData;
 import modelisation.tree.DecisionTree;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Implements a data partitioning strategy - given a matrix of data and a pivot column, group the rows into
@@ -13,7 +20,7 @@ public abstract class Split {
     /**
      * Split the given dataset into at least two partitions.
      * <p>
-     * This implementation uses {@link #getBranchLabels(int[])} and {@link #getBranchIndex(int)}
+     * This implementation uses {@link #getBranchLabels(Column)} and {@link #getBranchIndex(Column, int)}
      * to determine the partition of each element.
      *
      * @param data             input data as a column-indexed matrix, i.e. an array of columns - data[i][j] is
@@ -22,69 +29,50 @@ public abstract class Split {
      * @return a mapping of branch labels to split dataset partition, or null if the split cannot be applied
      * @see DecisionTree#getBranchLabel()
      */
-    public Optional<LinkedHashMap<String, int[][]>> applySplit(int[][] data, int splitColumnIndex) {
-        int rowCount = data[0].length;
-        String[] labels = getBranchLabels(data[splitColumnIndex]);
-        int leafCount = labels.length;
+    public Optional<LinkedHashMap<String, TrainingData>> applySplit(TrainingData data, int splitColumnIndex) {
+        Column splitColumn = data.getColumn(splitColumnIndex);
+        int rowCount = data.size();
+
+
+        String[] branchLabels = getBranchLabels(splitColumn);
+        int leafCount = branchLabels.length;
         if (leafCount < 2) {
             return Optional.empty();
         }
 
-        // for each leaf, store the number of rows it will have into `leafSize`
-        int[] leafSize = new int[leafCount];
-        // for each row, store the index of the leaf it will be in after the split into `targetLeaf`
-        int[] targetLeaf = new int[rowCount];
-
+        // for each resulting leaf partition, determine which rows it should contain
+        List<ArrayList<Integer>> leafRowIndexes = Stream.generate(ArrayList<Integer>::new)
+                .limit(leafCount)
+                .collect(Collectors.toList());
         for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
-            int target = getBranchIndex(data[splitColumnIndex][rowIndex]);
-            leafSize[target] += 1;
-            targetLeaf[rowIndex] = target;
+            int targetBranchIndex = getBranchIndex(splitColumn, rowIndex);
+            leafRowIndexes.get(targetBranchIndex).add(rowIndex);
         }
 
-        // we now allocate `leafCount` column-indexed matrices, in the same format as `data`
-        int[][][] leaves = new int[leafCount][][];
-        for (int leafIndex = 0; leafIndex < leafCount; ++leafIndex) {
-            leaves[leafIndex] = new int[data.length][];
-            // each leaf will have the same number of columns as the input data, but only `leafSize[leafIndex]` rows
-            for (int leafColumnIndex = 0; leafColumnIndex < data.length; ++leafColumnIndex) {
-                leaves[leafIndex][leafColumnIndex] = new int[leafSize[leafIndex]];
-            }
-            // leafSize will be re-used below to keep track of the first free row index for each leaf
-            leafSize[leafIndex] = 0;
-        }
-
-        for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
-            // copy each row from the input data into the appropriate leaf according to `targetLeaf[rowIndex]`
-            int leafIndex = targetLeaf[rowIndex];
-            int leafRowIndex = leafSize[leafIndex]++;
-            for (int leafColumnIndex = 0; leafColumnIndex < data.length; ++leafColumnIndex) {
-                leaves[leafIndex][leafColumnIndex][leafRowIndex] = data[leafColumnIndex][rowIndex];
-            }
-        }
-
-        LinkedHashMap<String, int[][]> result = new LinkedHashMap<>();
-        for (int leafIndex = 0; leafIndex < leafCount; ++leafIndex) {
-            result.put(labels[leafIndex], leaves[leafIndex]);
-        }
-        return Optional.of(result);
+        return Optional.of(IntStream.range(0, leafCount).collect(
+                LinkedHashMap<String, TrainingData>::new,
+                (map, idx) -> map.put(branchLabels[idx], data.partition(leafRowIndexes.get(idx))),
+                LinkedHashMap::putAll
+        ));
     }
 
     /**
-     * Get the set of labels to be applied to the partitions resulting from this split. <br/>
+     * Get the set of labels to be applied to the partitions resulting from this split.
      *
      * @param column the values of the target column of this split
      * @see DecisionTree#getBranchLabel()
      */
-    protected abstract String[] getBranchLabels(int[] column);
+    protected abstract String[] getBranchLabels(Column column);
 
     /**
-     * Given {@code value}, return the index of the branch it should be partitioned into.
+     * Given a value in the column, return the index of the branch it should be partitioned into.
      * <p>
-     * This method will always be called (multiple times) after {@link #getBranchLabels(int[])} and the
+     * This method will always be called (multiple times) after {@link #getBranchLabels(Column)} and the
      * returned index must correspond to the appropiate label returned by that function.
      *
-     * @param value target value from the data set column
+     * @param column the column being split
+     * @param index  index of the value to be assigned to a partition
      * @return branch index
      */
-    protected abstract int getBranchIndex(int value);
+    protected abstract int getBranchIndex(Column column, int index);
 }

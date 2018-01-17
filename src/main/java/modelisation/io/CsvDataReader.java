@@ -3,7 +3,7 @@ package modelisation.io;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
-import modelisation.TrainingData;
+import modelisation.data.TrainingData;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +38,7 @@ public class CsvDataReader {
     public CsvDataReader(FileInputStream stream) {
         this.stream = stream;
     }
+
     /**
      * Create a {@link TrainingData} reader that reads from the given file.
      *
@@ -50,6 +51,7 @@ public class CsvDataReader {
         this.quote = quote;
         this.separator = separator;
     }
+
     /**
      * Create a {@link TrainingData} reader that reads from the given input stream.
      *

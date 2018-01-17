@@ -1,6 +1,7 @@
 package modelisation;
 
 import javafx.application.Application;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,6 +13,8 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import modelisation.data.Column;
+import modelisation.data.TrainingData;
 import modelisation.io.CsvDataReader;
 
 import java.io.File;
@@ -19,9 +22,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Window extends Application {
-    TableView<String[]> tableView; //tableau pour stocker les données
+    TableView<Integer> tableView; //tableau pour stocker les données
 
     public static void main(String[] args) {
         launch(args);
@@ -188,19 +194,27 @@ public class Window extends Application {
 
     }
 
+    private TableColumn<Integer, ?> getTableColumn(Column column) {
+        if (column.isDiscrete()) {
+            TableColumn<Integer, String> tableColumn = new TableColumn<>(column.getHeader());
+            tableColumn.setCellValueFactory(idx -> new SimpleStringProperty(column.getValueAsString(idx.getValue())));
+            return tableColumn;
+        } else {
+            TableColumn<Integer, Number> tableColumn = new TableColumn<>(column.getHeader());
+            tableColumn.setCellValueFactory(idx -> new SimpleDoubleProperty(column.getValueAsNumber(idx.getValue()).doubleValue()));
+            return tableColumn;
+        }
+    }
+
     private void creationTableau(TrainingData data) {
-        ArrayList<TableColumn<String[], String>> columns = new ArrayList<>(data.getColumns().size());
-        String[] headers = data.getHeaders();
-        for (int columnIndex = 0; columnIndex < data.getColumns().size(); ++columnIndex) {
-            int finalColumnIndex = columnIndex;
-            TableColumn<String[], String> tableColumn = new TableColumn<>(headers[columnIndex]);
-            tableColumn.setCellValueFactory(row -> new SimpleStringProperty(row.getValue()[finalColumnIndex]));
-            columns.add(tableColumn);
+        List<TableColumn<Integer, ?>> tableColumns = new ArrayList<>(data.getColumns().size());
+        for (Column column : data.getColumns()) {
+            tableColumns.add(getTableColumn(column));
         }
 
-        ObservableList<String[]> rowIndexes = FXCollections.observableArrayList();
-        rowIndexes.addAll(data.getRawLines());
-        tableView.getColumns().setAll(columns);
+        ObservableList<Integer> rowIndexes = FXCollections.observableArrayList();
+        rowIndexes.addAll(IntStream.range(0, data.size()).boxed().collect(Collectors.toList()));
+        tableView.getColumns().setAll(tableColumns);
         tableView.setItems(rowIndexes); // ajouts des données au tableView
     }
 }

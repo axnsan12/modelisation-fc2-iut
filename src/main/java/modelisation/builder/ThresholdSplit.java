@@ -1,5 +1,7 @@
 package modelisation.builder;
 
+import modelisation.data.Column;
+
 /**
  * Splits a given continous-valued column into two partitions by comparing the values against the given threshold.
  * The first partition will contain elements that are strictly lower than threshold, while the second partition will
@@ -13,13 +15,14 @@ public class ThresholdSplit extends Split {
     }
 
     @Override
-    protected String[] getBranchLabels(int[] column) {
+    protected String[] getBranchLabels(Column column) {
         // < threshold goes into leaf 0, >= threshold goes into leaf 1
         return new String[]{"<" + threshold, ">=" + threshold};
     }
 
     @Override
-    protected int getBranchIndex(int value) {
-        return value < threshold ? 0 : 1;
+    protected int getBranchIndex(Column column, int index) {
+        double[] data = column.asDouble();
+        return data[index] < threshold ? 0 : 1;
     }
 }

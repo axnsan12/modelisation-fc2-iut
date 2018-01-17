@@ -1,4 +1,4 @@
-import modelisation.TrainingData;
+import modelisation.data.TrainingData;
 import modelisation.builder.DecisionTreeBuilder;
 import modelisation.builder.strategies.RandomSplittingStrategy;
 import modelisation.io.CsvDataReader;
@@ -16,14 +16,12 @@ public class TreeBuilderTest {
             TrainingData titanic = new CsvDataReader("datasets/train.csv").read();
 
             DecisionTreeBuilder.Configuration cfg = DecisionTreeBuilder.DEFAULT_CONFIG
-                    .withDiscreteMaxPercentage(2)
-                    .withContinuousMinLines(3)
-                    .withSplittingStrategy(new RandomSplittingStrategy(new Random(42)));
+                    .withSplittingStrategy(new RandomSplittingStrategy(new Random(420)));
             int idColumnIndex = 2;
             int targetColumnIndex = 0;
 
             List<Integer> dataColumns = Stream.of("pclass", "sex", "age", "sibsp", "parch", "fare", "embarked")
-                    .map(name -> titanic.getColumn(name).index)
+                    .map(name -> titanic.getColumn(name).getIndex())
                     .collect(Collectors.toList());
 
             DecisionTreeBuilder treeBuilder = new DecisionTreeBuilder(titanic, idColumnIndex, targetColumnIndex, dataColumns, cfg);

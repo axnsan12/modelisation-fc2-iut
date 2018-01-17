@@ -1,9 +1,10 @@
 package modelisation.builder;
 
 import modelisation.Indicateurs;
-import modelisation.TrainingData;
 import modelisation.builder.strategies.Chi2SplittingStrategy;
 import modelisation.builder.strategies.SplittingStrategy;
+import modelisation.data.Column;
+import modelisation.data.TrainingData;
 import modelisation.tree.DecisionTree;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -13,8 +14,6 @@ import java.util.stream.Collectors;
 
 public class DecisionTreeBuilder {
     public static final Configuration DEFAULT_CONFIG = new Configuration()
-            .withContinuousMinLines(10)
-            .withDiscreteMaxPercentage(20)
             .withMinNodeSize(3)
             .withMinSplitSize(7)
             .withHomogenityThreshold(75)
@@ -45,24 +44,29 @@ public class DecisionTreeBuilder {
             this.dataColumnIndexes = new TreeSet<>(dataColumnIndexes);
         } else {
             this.dataColumnIndexes = trainingData.getColumns().stream()
-                    .filter(c -> c.index != idColumnIndex && c.index != targetColumnIndex)
-                    .map(c -> c.index)
+                    .filter(c -> c.getIndex() != idColumnIndex && c.getIndex() != targetColumnIndex)
+                    .map(Column::getIndex)
                     .collect(Collectors.toSet());
+        }
+
+        checkInput(trainingData.getColumns(), idColumnIndex, targetColumnIndex, this.dataColumnIndexes);
+        if (!trainingData.getColumn(targetColumnIndex).isDiscrete()) {
+            throw new UnsupportedOperationException("DecisionTreeBuilder does not handle regression trees (for now)!");
         }
     }
 
-    private static void checkInputData(int[][] data, int idColumnIndex, int targetColumnIndex, @Nullable Set<Integer> dataColumnIndexes) throws IllegalArgumentException {
-        if (data == null || data.length == 0) {
+    private static void checkInput(List<Column> data, int idColumnIndex, int targetColumnIndex, @Nullable Set<Integer> dataColumnIndexes) throws IllegalArgumentException {
+        if (data == null || data.size() == 0) {
             throw new IllegalArgumentException("data set must not be empty");
         }
-        if (idColumnIndex < 0 || idColumnIndex >= data.length) {
+        if (idColumnIndex < 0 || idColumnIndex >= data.size()) {
             throw new IllegalArgumentException("id column out of range");
         }
-        if (targetColumnIndex < 0 || targetColumnIndex >= data.length) {
+        if (targetColumnIndex < 0 || targetColumnIndex >= data.size()) {
             throw new IllegalArgumentException("target column out of range");
         }
-        for (int[] column : data) {
-            if (column.length != data[0].length) {
+        for (Column column : data) {
+            if (column.size() != data.get(0).size()) {
                 throw new IllegalArgumentException("all columns in the data set must be of the same size");
             }
         }
@@ -72,7 +76,7 @@ public class DecisionTreeBuilder {
             }
 
             for (int col : dataColumnIndexes) {
-                if (col < 0 || col >= data.length) {
+                if (col < 0 || col >= data.size()) {
                     throw new IllegalArgumentException("data column index out of range");
                 }
             }
@@ -85,24 +89,26 @@ public class DecisionTreeBuilder {
      *
      * @return the best split, or null if no meaningful split can be made
      */
-    private Optional<SplitScore> chooseBestSplit(int[][] data, @NonNull Set<Integer> ignoring) {
-        ArrayList<SplitScore> splits = new ArrayList<>(data.length);
+    private Optional<SplitScore> chooseBestSplit(TrainingData data, @NonNull Set<Integer> ignoring) {
+        ArrayList<SplitScore> splits = new ArrayList<>(data.size());
         // we go through all unused columns and calculate the split score for each
-        for (int columnIndex = 0; columnIndex < data.length; ++columnIndex) {
+        for (int columnIndex = 0; columnIndex < data.size(); ++columnIndex) {
             if (dataColumnIndexes.contains(columnIndex) && !ignoring.contains(columnIndex)) {
                 final Split split;
-                int[] column = data[columnIndex];
-                if (shouldDiscretize(column)) {
+                Column column = data.getColumn(columnIndex);
+                int[] columnData;
+                if (!column.isDiscrete()) {
                     // a column of continuous values may need to be transformed into classes before splitting metrics
                     // can be applied to it; the algorithm used is a simple binary split on a chosen threshold value
                     double splitValue = chooseSplitValue(column);
                     split = new ThresholdSplit(splitValue);
-                    column = Arrays.stream(column).map(val -> val < splitValue ? 0 : 1).toArray();
+                    columnData = Arrays.stream(column.asDouble()).mapToInt(val -> val < splitValue ? 0 : 1).toArray();
                 } else {
                     split = new DiscreteSplit();
+                    columnData = column.asClasses();
                 }
 
-                double score = config.getSplittingStrategy().evaluateSplit(data[targetColumnIndex], column);
+                double score = config.getSplittingStrategy().evaluateSplit(data.getColumn(targetColumnIndex).asClasses(), columnData);
                 splits.add(new SplitScore(columnIndex, split, score));
             }
         }
@@ -121,17 +127,17 @@ public class DecisionTreeBuilder {
      * @return mapping of branch labels to child nodes, or null if {@code split} cannot be applied
      * @see DecisionTree#getBranchLabel()
      */
-    private Optional<LinkedHashMap<String, DecisionTree>> getChildren(int[][] data, SplitScore split, int depth) {
+    private Optional<LinkedHashMap<String, DecisionTree>> getChildren(TrainingData data, SplitScore split, int depth) {
         LinkedHashMap<String, DecisionTree> children = new LinkedHashMap<>();
-        Optional<? extends Map<String, int[][]>> partitions = split.split.applySplit(data, split.columnIndex);
+        Optional<? extends Map<String, TrainingData>> partitions = split.split.applySplit(data, split.columnIndex);
 
         if (partitions.isPresent()) {
-            for (Map.Entry<String, int[][]> entry : partitions.get().entrySet()) {
+            for (Map.Entry<String, TrainingData> entry : partitions.get().entrySet()) {
                 String branchLabel = entry.getKey();
-                int[][] childData = entry.getValue();
-                if (childData[0].length < config.getMinNodeSize()) {
+                TrainingData childData = entry.getValue();
+                if (childData.size() < config.getMinNodeSize()) {
                     System.out.println("skipping split of " + split.columnIndex + " because branch " + branchLabel +
-                            " has too few results (" + childData[0].length + " out of " + config.getMinNodeSize() + ")");
+                            " has too few results (" + childData.size() + " out of " + config.getMinNodeSize() + ")");
                     break;
                 }
                 children.put(branchLabel, buildTree(childData, depth + 1));
@@ -161,13 +167,7 @@ public class DecisionTreeBuilder {
      * @return the built decision tree
      */
     public DecisionTree buildTree() {
-        List<TrainingData.Column> columns = trainingData.getColumns();
-        int[][] data = new int[columns.size()][];
-        for (TrainingData.Column column : columns) {
-            data[column.index] = Arrays.copyOf(column.data, column.data.length);
-        }
-        checkInputData(data, idColumnIndex, targetColumnIndex, dataColumnIndexes);
-        return buildTree(data, 0);
+        return buildTree(trainingData, 0);
     }
 
     /**
@@ -178,17 +178,16 @@ public class DecisionTreeBuilder {
      * @param depth the current depth in the tree generation process; the root starts at depth 0
      * @return the built decision tree
      */
-    protected DecisionTree buildTree(int[][] data, int depth) {
-        int[] targetColumn = data[targetColumnIndex];
-        String targetColumnName = trainingData.getColumn(targetColumnIndex).header;
+    protected DecisionTree buildTree(TrainingData data, int depth) {
+        Column targetColumn = data.getColumn(targetColumnIndex);
         TreeSet<Integer> triedColumns = new TreeSet<>();
 
         // we only try a split if the dataset is not too small and if it is not already homogeneous
-        if (data[0].length >= config.getMinSplitSize() && !isHomogeneous(targetColumn) && depth <= config.getMaxDepth()) {
+        if (data.size() >= config.getMinSplitSize() && !isHomogeneous(targetColumn.asClasses()) && depth <= config.getMaxDepth()) {
             Optional<SplitScore> chosenSplit;
             while ((chosenSplit = chooseBestSplit(data, triedColumns)).isPresent()) {
                 SplitScore split = chosenSplit.get();
-                String columnName = trainingData.getColumn(split.columnIndex).header;
+                String columnName = trainingData.getColumn(split.columnIndex).getHeader();
                 DecisionTree result = new DecisionTree(split.columnIndex, columnName, data);
                 Optional<? extends Map<String, DecisionTree>> children = getChildren(data, split, depth);
 
@@ -203,21 +202,7 @@ public class DecisionTreeBuilder {
         }
 
         // if no split can be made, return a terminal node
-        return new DecisionTree(targetColumnIndex, targetColumnName, data);
-    }
-
-    /**
-     * Decide if the given column should be discretized before being scored. Generally this applies to
-     * cases where the scoring function expects discrete/categorical values but the column has too many
-     * distinct values and can be conisdered "continuous".
-     *
-     * @param column column in question
-     * @return true if the column should be discretized before applying
-     * {@link SplittingStrategy#evaluateSplit(int[], int[])}
-     * @see #chooseSplitValue(int[])
-     */
-    protected boolean shouldDiscretize(int[] column) {
-        return Indicateurs.shouldDiscretize(column, config.getContinuousMinLines(), config.getDiscreteMaxPercentage());
+        return new DecisionTree(targetColumnIndex, targetColumn.getHeader(), data);
     }
 
     /**
@@ -230,13 +215,15 @@ public class DecisionTreeBuilder {
      * @param column continuous column
      * @return desired split value
      */
-    protected double chooseSplitValue(int[] column) {
-        return Indicateurs.getSplitValue(column);
+    protected double chooseSplitValue(Column column) {
+        // TODO: pending change to double
+        return Indicateurs.getSplitValue(Arrays.stream(column.asDouble())
+                .mapToInt(val -> (int) Math.round(val))
+                .toArray()
+        );
     }
 
     public static class Configuration implements Cloneable {
-        private int continuousMinLines;
-        private int discreteMaxPercentage;
         private int minNodeSize;
         private int minSplitSize;
         private int homogenityThreshold;
@@ -265,43 +252,6 @@ public class DecisionTreeBuilder {
             } catch (CloneNotSupportedException e) {
                 throw new RuntimeException(e);
             }
-        }
-
-        /**
-         * The minimum number of lines required in order to treat values as continuous. If there are less than this
-         * number of lines in the data set, values will always be treated as discrete.
-         */
-        public int getContinuousMinLines() {
-            return continuousMinLines;
-        }
-
-        /**
-         * @see #getContinuousMinLines()
-         */
-        public Configuration withContinuousMinLines(int continuousMinLines) {
-            Configuration result = this.clone();
-            result.continuousMinLines = requireNonNegative(continuousMinLines);
-            return result;
-        }
-
-        /**
-         * The maximum percentage of distinct values (out of the total number of lines), after which the column
-         * is considered to be a continuous value. This only applies if the total number of lines is greater than
-         * or requal to {@link #getContinuousMinLines()}.
-         * <p>
-         * Valid range: [0, 100]
-         */
-        public int getDiscreteMaxPercentage() {
-            return discreteMaxPercentage;
-        }
-
-        /**
-         * @see #getDiscreteMaxPercentage()
-         */
-        public Configuration withDiscreteMaxPercentage(int discreteMaxPercentage) {
-            Configuration result = this.clone();
-            result.discreteMaxPercentage = requirePercentage(discreteMaxPercentage);
-            return result;
         }
 
         /**

@@ -1,29 +1,35 @@
 package modelisation.tree;
 
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
+
+import modelisation.data.TrainingData;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import java.util.*;
 
 public class DecisionTree {
     private final int columnIndex;
+    private final String columnName;
     private DecisionTree parent;
-    private int populationCount;
+    private final TrainingData population;
     private String branchLabel;
     private final ArrayList<DecisionTree> children = new ArrayList<>();
 
     /**
      * Create a new DecisionTree node. <br/>
      *
-     * @param columnIndex     the index of the column this node is splitting on
-     * @param populationCount number of trainng set rows matched by this node
+     * @param columnIndex the index of the column this node is splitting on
+     * @param columnName  the name of the column this node is splitting on
+     * @param population  trainng set partition matched by this node
      * @see #getColumnIndex()
      * @see #getPopulationCount()
      */
-    public DecisionTree(int columnIndex, int populationCount) {
+    public DecisionTree(int columnIndex, String columnName, TrainingData population) {
         this.columnIndex = columnIndex;
-        this.populationCount = populationCount;
+        this.columnName = columnName;
+        this.population = population;
     }
+
 
     /**
      * Attach children to this node. Trying to attach children to a node which already
@@ -32,14 +38,14 @@ public class DecisionTree {
      * @param children a map of branch labels to child nodes
      * @see #getBranchLabel()
      */
-    public void setChildren(@NotNull HashMap<String, DecisionTree> children) {
+    public void setChildren(@NonNull Map<String, DecisionTree> children) {
         if (!this.children.isEmpty()) {
             throw new IllegalStateException("this node already has children attached");
         }
         if (children.isEmpty()) {
             throw new IllegalArgumentException("empty child list is not allowed");
         }
-        for (HashMap.Entry<String, DecisionTree> entry : children.entrySet()) {
+        for (Map.Entry<String, DecisionTree> entry : children.entrySet()) {
             DecisionTree child = entry.getValue();
             String branchLabel = entry.getKey();
             child.setParent(this, branchLabel);
@@ -54,12 +60,20 @@ public class DecisionTree {
      * @param branchLabel this node's branch label
      * @see #getBranchLabel()
      */
-    private void setParent(@NotNull DecisionTree parent, @NotNull String branchLabel) {
+    private void setParent(@NonNull DecisionTree parent, @NonNull String branchLabel) {
         if (this.parent != null) {
             throw new IllegalStateException("this node is already attached to a parent");
         }
         this.parent = Objects.requireNonNull(parent);
         this.branchLabel = Objects.requireNonNull(branchLabel);
+    }
+
+    /**
+     * @return the name of the column this node is splitting on.
+     * @see #getColumnIndex()
+     */
+    public String getColumnName() {
+        return columnName;
     }
 
     /**
@@ -113,6 +127,6 @@ public class DecisionTree {
      * @return number of trainng set rows matched by this node
      */
     public int getPopulationCount() {
-        return populationCount;
+        return population.size();
     }
 }

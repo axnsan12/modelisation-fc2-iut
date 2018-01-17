@@ -1,9 +1,29 @@
-package modelisation;
+package modelisationp;
+
+import modelisation.Indicateurs;
 
 import java.util.ArrayList;
 
 public class FonctionsRegression {
 
+	public static double [] ensembleFils(double[] Y, double[] X, int mincut)
+	{
+		double [] fils = {0,0};
+		int indiceVariance = meilleureVarianceXi(Y,X,mincut);
+		for (int i=mincut;i<Y.length-mincut;i++)
+		{
+			if (X[i]<X[indiceVariance])
+			{
+				fils[0] = fils[0] + Y[i];
+			}
+			else
+			{
+				fils[1] = fils[1] + Y[i];
+			}
+		}
+		return fils;
+	}
+	
 	public static double [] meilleureVarianceGlob(double[] Y, ArrayList<double[]> X, int mincut)
 	{
 		double [] meilXi=null;

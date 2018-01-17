@@ -33,6 +33,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Classe d'affichage de l'interface graphique
+ * @author agnerayq
+ *
+ */
+
 public class InterfaceGrap extends Application {
     TableView<Integer> tbleView; //tableau pour stocker les données
 
@@ -340,7 +346,10 @@ public class InterfaceGrap extends Application {
         scene.setFill(Color.GHOSTWHITE);
 
     }
-
+    /**
+     * méthode de lecture d'un CSV à partir d'un fichier File
+     * @param file
+     */
     private void lireCSV(File file) {
         try {
             TrainingData data = new CsvDataReader(new FileInputStream(file)).read();
@@ -364,7 +373,10 @@ public class InterfaceGrap extends Application {
         }
     }
 
-
+    /**
+     * méthode qui crée un tableau et qui ajoute les données du CSV à celui si
+     * @param data
+     */
     private void creationTableau(TrainingData data) {
         List<TableColumn<Integer, ?>> tableColumns = new ArrayList<>(data.getColumns().size());
         for (Column column : data.getColumns()) {

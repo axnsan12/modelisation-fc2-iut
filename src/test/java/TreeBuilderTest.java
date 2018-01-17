@@ -1,5 +1,6 @@
 import modelisation.data.TrainingData;
 import modelisation.builder.DecisionTreeBuilder;
+import modelisation.builder.strategies.Chi2SplittingStrategy;
 import modelisation.builder.strategies.RandomSplittingStrategy;
 import modelisation.io.CsvDataReader;
 import modelisation.tree.DecisionTree;
@@ -16,7 +17,7 @@ public class TreeBuilderTest {
             TrainingData titanic = new CsvDataReader("datasets/train.csv").read();
 
             DecisionTreeBuilder.Configuration cfg = DecisionTreeBuilder.DEFAULT_CONFIG
-                    .withSplittingStrategy(new RandomSplittingStrategy(new Random(420)));
+                    .withSplittingStrategy(new Chi2SplittingStrategy());
             int idColumnIndex = 2;
             int targetColumnIndex = 0;
 

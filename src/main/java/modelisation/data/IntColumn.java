@@ -70,10 +70,18 @@ import java.util.Arrays;
     }
 
     @Override
+    protected int getClassCount() {
+        if (isDiscrete()) {
+            getAsClasses(); // populate classes and labels
+        }
+        return super.getClassCount();
+    }
+
+    @Override
     public String getValueAsString(int index) {
         if (isDiscrete()) {
             getAsClasses(); // populate classes and labels
-            return super.getValueAsString(index); // call PossiblyDiscreteColumn::getValueAsString
+            return super.getValueAsString(index);
         } else {
             return String.valueOf(data[index]);
         }
@@ -82,7 +90,7 @@ import java.util.Arrays;
     @Override
     public Number getValueAsNumber(int index) {
         if (isDiscrete()) {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException("getValueAsNumber can only be called on continuous columns");
         }
         return data[index];
     }

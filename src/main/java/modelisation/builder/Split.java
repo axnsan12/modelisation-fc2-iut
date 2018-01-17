@@ -33,7 +33,6 @@ public abstract class Split {
         Column splitColumn = data.getColumn(splitColumnIndex);
         int rowCount = data.size();
 
-
         String[] branchLabels = getBranchLabels(splitColumn);
         int leafCount = branchLabels.length;
         if (leafCount < 2) {

@@ -12,7 +12,7 @@ import java.util.HashMap;
 
     /**
      * Array that maps values in {@link #classedData} back to the original value in String form. The size of this
-     * array is equal to the number of distinct classes in {@link #classedData}.
+     * array is equal to {@link #classCount()}.
      *
      * @see #classifyData(Object[])
      */
@@ -68,5 +68,14 @@ import java.util.HashMap;
         }
         int value = classedData[index];
         return classLabels[value];
+    }
+
+    @Override
+    protected int getClassCount() {
+        if (!isDiscrete() || classedData == null || classLabels == null) {
+            throw new IllegalStateException("PossiblyDiscreteColumn::getClassCount can only " +
+                    "be called on a discrete column, after calling ::classifyData");
+        }
+        return classLabels.length;
     }
 }

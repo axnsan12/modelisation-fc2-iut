@@ -1,6 +1,7 @@
 package modelisation.builder.strategies;
 
 import modelisation.Indicateurs;
+import modelisation.data.Column;
 import org.eclipse.jdt.annotation.NonNull;
 
 import java.util.Collection;
@@ -14,8 +15,8 @@ public class Chi2SplittingStrategy implements SplittingStrategy {
     }
 
     @Override
-    public double evaluateSplit(int[] targetColumn, int[] splitColumn) {
-        return Indicateurs.chi2(targetColumn, splitColumn);
+    public double evaluateSplit(Column targetColumn, Column splitColumn) {
+        return Indicateurs.chi2(targetColumn.asClasses(), splitColumn.asClasses());
     }
 
     @Override

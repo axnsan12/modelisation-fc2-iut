@@ -1,5 +1,6 @@
 package modelisation.builder.strategies;
 
+import modelisation.data.Column;
 import org.eclipse.jdt.annotation.NonNull;
 
 import java.util.Collection;
@@ -20,7 +21,7 @@ public class RandomSplittingStrategy implements SplittingStrategy {
     }
 
     @Override
-    public double evaluateSplit(int[] targetColumn, int[] splitColumn) {
+    public double evaluateSplit(Column targetColumn, Column splitColumn) {
         return random.nextDouble();
     }
 

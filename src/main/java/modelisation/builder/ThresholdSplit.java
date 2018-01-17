@@ -6,6 +6,8 @@ import modelisation.data.Column;
  * Splits a given continous-valued column into two partitions by comparing the values against the given threshold.
  * The first partition will contain elements that are strictly lower than threshold, while the second partition will
  * contain elements that are greater than or equal to threshold.
+ *
+ * @see modelisation.data.SplitColumn#fromColumn(Column, double)
  */
 public class ThresholdSplit extends Split {
     private final double threshold;

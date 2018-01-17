@@ -49,12 +49,25 @@ public interface Column {
 
     /**
      * Get the class/partition of each value in the column. The return value is an array of integers in the range
-     * {@code [0,N)}, where N is the total number of classes the column values can be in.
+     * {@code [0,N)}, where N is {@link #classCount()}, the total number of classes the column values can be in.
      * Can only be used if {@link #isDiscrete()} returns true.
      *
      * @return row classes
+     * @see #classCount()
      */
     int[] asClasses();
+
+    /**
+     * Get the number of distnict classes this column's values are divided into. It is guaranteed that the array
+     * returned by {@link #asClasses()} contains **at most** this many distinct values, and that every value in said
+     * array is strictly smaller than this value.
+     * <p>
+     * Can only be used if {@link #isDiscrete()} returns true.
+     *
+     * @return row classes
+     * @see #asClasses()
+     */
+    int classCount();
 
     /**
      * @return count of valuet in the column

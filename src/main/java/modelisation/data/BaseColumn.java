@@ -63,7 +63,7 @@ package modelisation.data;
     }
 
     @Override
-    public double[] asDouble() {
+    public final double[] asDouble() {
         if (isDiscrete()) {
             throw new IllegalStateException("asDouble can only be called on columns which are interpreted as continous variables");
         }
@@ -76,7 +76,7 @@ package modelisation.data;
     protected abstract double[] getAsDouble();
 
     @Override
-    public int[] asClasses() {
+    public final int[] asClasses() {
         if (!isDiscrete()) {
             throw new IllegalStateException("asClasses can only be called on columns which are interpreted as discrete variables");
         }
@@ -87,6 +87,19 @@ package modelisation.data;
      * Implementation for {@link #asClasses()}.
      */
     protected abstract int[] getAsClasses();
+
+    @Override
+    public final int classCount() {
+        if (!isDiscrete()) {
+            throw new IllegalStateException("classCount can only be called on columns which are interpreted as discrete variables");
+        }
+        return getClassCount();
+    }
+
+    /**
+     * Implementation for {@link #classCount()}
+     */
+    protected abstract int getClassCount();
 
     @Override
     public Column partial(int[] keepIndexes) {

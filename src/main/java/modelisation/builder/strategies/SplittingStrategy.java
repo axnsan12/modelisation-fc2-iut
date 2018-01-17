@@ -1,6 +1,7 @@
 package modelisation.builder.strategies;
 
 import modelisation.builder.DecisionTreeBuilder;
+import modelisation.data.Column;
 import org.eclipse.jdt.annotation.NonNull;
 
 import java.util.Collection;
@@ -32,9 +33,9 @@ public interface SplittingStrategy {
     }
 
     /**
-     * Choose the best split from a collection of splits scored by {@link #evaluateSplit(int[], int[])}.
+     * Choose the best split from a collection of splits scored by {@link #evaluateSplit(Column, Column)}.
      * <p>
-     * The score returned by {@link #evaluateSplit(int[], int[])} is accesible via {@code score(S)}.
+     * The score returned by {@link #evaluateSplit(Column, Column)} is accesible via {@code score(S)}.
      *
      * @param splits a collection of possible splits to be compared; must not be empty
      * @param score  functor to extract the score from a split
@@ -51,7 +52,7 @@ public interface SplittingStrategy {
      * @param splitColumn  column containing discrete values to make a split decision on
      * @return a split score as interpreted by {@link #chooseBestSplit(Collection, ToDoubleFunction)}
      */
-    double evaluateSplit(int[] targetColumn, int[] splitColumn);
+    double evaluateSplit(Column targetColumn, Column splitColumn);
 
     /**
      * Human-readable name for this strategy.

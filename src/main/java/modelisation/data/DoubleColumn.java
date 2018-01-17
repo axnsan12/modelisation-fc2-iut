@@ -24,6 +24,11 @@ package modelisation.data;
     }
 
     @Override
+    protected int getClassCount() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String getValueAsString(int index) {
         return String.valueOf(data[index]);
     }

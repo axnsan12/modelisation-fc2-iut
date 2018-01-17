@@ -4,6 +4,7 @@ import modelisation.Indicateurs;
 import modelisation.builder.strategies.Chi2SplittingStrategy;
 import modelisation.builder.strategies.SplittingStrategy;
 import modelisation.data.Column;
+import modelisation.data.SplitColumn;
 import modelisation.data.TrainingData;
 import modelisation.tree.DecisionTree;
 import org.eclipse.jdt.annotation.NonNull;
@@ -90,25 +91,26 @@ public class DecisionTreeBuilder {
      * @return the best split, or null if no meaningful split can be made
      */
     private Optional<SplitScore> chooseBestSplit(TrainingData data, @NonNull Set<Integer> ignoring) {
+        Column targetColumn = data.getColumn(targetColumnIndex);
         ArrayList<SplitScore> splits = new ArrayList<>(data.size());
+
         // we go through all unused columns and calculate the split score for each
         for (int columnIndex = 0; columnIndex < data.size(); ++columnIndex) {
             if (dataColumnIndexes.contains(columnIndex) && !ignoring.contains(columnIndex)) {
                 final Split split;
-                Column column = data.getColumn(columnIndex);
-                int[] columnData;
-                if (!column.isDiscrete()) {
+                Column splitColumn = data.getColumn(columnIndex);
+
+                if (!splitColumn.isDiscrete()) {
                     // a column of continuous values may need to be transformed into classes before splitting metrics
                     // can be applied to it; the algorithm used is a simple binary split on a chosen threshold value
-                    double splitValue = chooseSplitValue(column);
+                    double splitValue = chooseSplitValue(splitColumn);
                     split = new ThresholdSplit(splitValue);
-                    columnData = Arrays.stream(column.asDouble()).mapToInt(val -> val < splitValue ? 0 : 1).toArray();
+                    splitColumn = SplitColumn.fromColumn(splitColumn, splitValue);
                 } else {
                     split = new DiscreteSplit();
-                    columnData = column.asClasses();
                 }
 
-                double score = config.getSplittingStrategy().evaluateSplit(data.getColumn(targetColumnIndex).asClasses(), columnData);
+                double score = config.getSplittingStrategy().evaluateSplit(targetColumn, splitColumn);
                 splits.add(new SplitScore(columnIndex, split, score));
             }
         }
@@ -353,7 +355,7 @@ public class DecisionTreeBuilder {
 
     /**
      * Stores the {@link #score} of splitting column #{@link #columnIndex} using {@link #split}, as calculated by
-     * {@link SplittingStrategy#evaluateSplit(int[], int[])}.
+     * {@link SplittingStrategy#evaluateSplit(Column, Column)}.
      */
     protected static class SplitScore {
         public final int columnIndex;

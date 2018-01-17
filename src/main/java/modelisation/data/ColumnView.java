@@ -60,6 +60,11 @@ import java.util.List;
     }
 
     @Override
+    public int classCount() {
+        return realColumn.classCount();
+    }
+
+    @Override
     public int size() {
         return indexMapping.length;
     }

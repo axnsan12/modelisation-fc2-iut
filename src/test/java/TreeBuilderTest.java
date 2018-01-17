@@ -1,13 +1,11 @@
-import modelisation.data.TrainingData;
 import modelisation.builder.DecisionTreeBuilder;
 import modelisation.builder.strategies.Chi2SplittingStrategy;
-import modelisation.builder.strategies.RandomSplittingStrategy;
+import modelisation.data.TrainingData;
 import modelisation.io.CsvDataReader;
 import modelisation.tree.DecisionTree;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

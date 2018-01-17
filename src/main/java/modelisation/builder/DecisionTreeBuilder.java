@@ -1,6 +1,5 @@
 package modelisation.builder;
 
-import modelisation.Indicateurs;
 import modelisation.builder.strategies.Chi2SplittingStrategy;
 import modelisation.builder.strategies.SplittingStrategy;
 import modelisation.data.Column;
@@ -208,6 +207,27 @@ public class DecisionTreeBuilder {
     }
 
     /**
+     * Calculate the median value of an array.
+     * <p>
+     * The median of a set of numbers is defined as the value X for which
+     * there are as many elements < X as there are > X.
+     *
+     * @return median value
+     */
+    private static double median(double[] array) {
+        array = Arrays.copyOf(array, array.length);
+        Arrays.sort(array);
+
+        int midLow = (int) Math.round(Math.floor((array.length - 1.0) / 2.0));
+        int midHigh = (int) Math.round(Math.ceil((array.length - 1.0) / 2.0));
+        if (midLow == midHigh) {
+            return array[midLow];
+        } else {
+            return (array[midLow] + array[midHigh]) / 2.0;
+        }
+    }
+
+    /**
      * For a continous-valued column that needs to be reduced to a discrete-valued column,
      * choose an appropriate value to split on.
      * <p>
@@ -218,11 +238,7 @@ public class DecisionTreeBuilder {
      * @return desired split value
      */
     protected double chooseSplitValue(Column column) {
-        // TODO: pending change to double
-        return Indicateurs.getSplitValue(Arrays.stream(column.asDouble())
-                .mapToInt(val -> (int) Math.round(val))
-                .toArray()
-        );
+        return median(column.asDouble());
     }
 
     public static class Configuration implements Cloneable {

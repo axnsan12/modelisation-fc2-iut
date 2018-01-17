@@ -13,7 +13,6 @@ public class IndicateursTest {
         double[] Z = {1, 2, 2, 2, 3, 2};
         double[] T = {0, 0.5, -1, 2, 1, -0.5};
         
-        Indicateurs.afficherTabCont(X, Y);
         System.out.println(Indicateurs.chi2(X, Y));
         System.out.println(Indicateurs.gini(X, Y));
         System.out.println(Indicateurs.erreurClass(X, Y));

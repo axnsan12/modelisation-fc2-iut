@@ -66,7 +66,7 @@ import java.util.Arrays;
         if (classedData == null) {
             classifyData(Arrays.stream(data).boxed().toArray(Integer[]::new));
         }
-        return data;
+        return classedData;
     }
 
     @Override

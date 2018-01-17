@@ -1,3 +1,4 @@
+import modelisation.FonctionsRegression;
 
 import java.util.ArrayList;
 
@@ -18,11 +19,11 @@ public class FonctionRegressionTest {
         X.add(X2);
         X.add(X3);
         X.add(X4);
-        System.out.println(modelisationp.FonctionsRegression.meilleureVarianceXi(Y, X1, 2));
-        System.out.println(X2[modelisationp.FonctionsRegression.meilleureVarianceXi(Y, X2, 2)]);
-        System.out.println(modelisationp.FonctionsRegression.meilleureVarianceXi(Y, X3, 2));
-        System.out.println(modelisationp.FonctionsRegression.meilleureVarianceXi(Y, X4, 2));
-        meil = modelisationp.FonctionsRegression.meilleureVarianceGlob(Y, X, 2);
+        System.out.println(FonctionsRegression.meilleureVarianceXi(Y, X1, 2));
+        System.out.println(X2[FonctionsRegression.meilleureVarianceXi(Y, X2, 2)]);
+        System.out.println(FonctionsRegression.meilleureVarianceXi(Y, X3, 2));
+        System.out.println(FonctionsRegression.meilleureVarianceXi(Y, X4, 2));
+        meil = FonctionsRegression.meilleureVarianceGlob(Y, X, 2);
         System.out.print("{");
         for (int i = 0; i < meil.length; i++) {
             System.out.print(meil[i] + ",");
@@ -30,7 +31,7 @@ public class FonctionRegressionTest {
         System.out.println("}");
 
 
-        fils = modelisationp.FonctionsRegression.ensembleFils(Y, X4, 2);
+        fils = FonctionsRegression.ensembleFils(Y, X4, 2);
         System.out.print("{");
         for (int j = 0; j < fils.length; j++) {
             System.out.print(fils[j] + ",");

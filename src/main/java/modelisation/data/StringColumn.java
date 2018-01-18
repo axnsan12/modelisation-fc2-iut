@@ -1,7 +1,6 @@
 package modelisation.data;
 
 /*internal*/ class StringColumn extends PossiblyDiscreteColumn {
-
     /*internal*/ StringColumn(int index, String header, String[] data) {
         super(index, header, Continuity.DISCRETE);
         classifyData(data);

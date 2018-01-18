@@ -78,6 +78,14 @@ import java.util.Arrays;
     }
 
     @Override
+    protected String getClassLabel(int classId) {
+        if (isDiscrete()) {
+            getAsClasses(); // populate classes and labels
+        }
+        return super.getClassLabel(classId);
+    }
+
+    @Override
     public String getValueAsString(int index) {
         if (isDiscrete()) {
             getAsClasses(); // populate classes and labels

@@ -6,7 +6,9 @@
 
     <groupId>fc2.iut</groupId>
     <artifactId>modelisation</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
+    <packaging>jar</packaging>
+
 
     <build>
         <resources>
@@ -30,6 +32,20 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <configuration>
                     <outputDirectory>lib</outputDirectory>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>modelisation.InterfaceGrap</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
@@ -77,8 +93,5 @@
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.10.0</version>
         </dependency>
-
     </dependencies>
-
-
 </project>

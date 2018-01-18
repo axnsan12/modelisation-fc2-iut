@@ -1,5 +1,5 @@
 import modelisation.builder.DecisionTreeBuilder;
-import modelisation.builder.strategies.Chi2SplittingStrategy;
+import modelisation.builder.strategies.GiniSplittingStrategy;
 import modelisation.data.TrainingData;
 import modelisation.io.CsvDataReader;
 import modelisation.io.GraphvizTreeWriter;
@@ -17,7 +17,7 @@ public class TreeBuilderTest {
 
             DecisionTreeBuilder.Configuration cfg = DecisionTreeBuilder.DEFAULT_CONFIG
                     .withMaxDepth(2)
-                    .withSplittingStrategy(new Chi2SplittingStrategy());
+                    .withSplittingStrategy(new GiniSplittingStrategy());
             int idColumnIndex = 2;
             int targetColumnIndex = 0;
 
@@ -28,7 +28,7 @@ public class TreeBuilderTest {
             DecisionTreeBuilder treeBuilder = new DecisionTreeBuilder(titanic, idColumnIndex, targetColumnIndex, dataColumns, cfg);
             DecisionTree tree = treeBuilder.buildTree();
             GraphvizTreeWriter treeWriter = new GraphvizTreeWriter();
-            treeWriter.write(tree);
+            treeWriter.write(tree, targetColumnIndex);
             System.out.println(tree);
         } catch (IOException e) {
             e.printStackTrace();

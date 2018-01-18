@@ -1,10 +1,11 @@
 import modelisation.builder.DecisionTreeBuilder;
-import modelisation.builder.strategies.ChiSquared;
+import modelisation.builder.strategies.EntropyReduction;
 import modelisation.data.TrainingData;
 import modelisation.io.CsvDataReader;
 import modelisation.io.GraphvizTreeWriter;
 import modelisation.tree.DecisionTree;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,8 +17,7 @@ public class TreeBuilderTest {
             TrainingData titanic = new CsvDataReader("datasets/train.csv").read();
 
             DecisionTreeBuilder.Configuration cfg = DecisionTreeBuilder.DEFAULT_CONFIG
-                    .withMaxDepth(3)
-                    .withSplittingStrategy(new ChiSquared());
+                    .withSplittingStrategy(new EntropyReduction());
             int idColumnIndex = 2;
             int targetColumnIndex = 0;
 
@@ -27,7 +27,7 @@ public class TreeBuilderTest {
 
             DecisionTreeBuilder treeBuilder = new DecisionTreeBuilder(titanic, idColumnIndex, targetColumnIndex, dataColumns, cfg);
             DecisionTree tree = treeBuilder.buildTree();
-            GraphvizTreeWriter treeWriter = new GraphvizTreeWriter();
+            GraphvizTreeWriter treeWriter = new GraphvizTreeWriter(new File("graphviz/test3.png"));
             treeWriter.write(tree, targetColumnIndex);
             System.out.println(tree);
         } catch (IOException e) {

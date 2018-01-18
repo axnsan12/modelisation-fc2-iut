@@ -104,7 +104,11 @@ public class TrainingData {
      * @return target column
      */
     public Column getColumn(String header) {
-        return columnsByHeader.get(header);
+        if (columnsByHeader.containsKey(header)) {
+            return columnsByHeader.get(header);
+        } else {
+            throw new IllegalArgumentException("no such column " + header);
+        }
     }
 
     /**

@@ -20,6 +20,12 @@ import java.util.Arrays;
 import static guru.nidi.graphviz.model.Factory.*;
 
 public class GraphvizTreeWriter {
+    private final File outputFile;
+
+    public GraphvizTreeWriter(File outputFile) {
+        this.outputFile = outputFile;
+    }
+
     private String getClassDistribution(Column targetColumn) {
         int[] classSizes = new int[targetColumn.classCount()];
         for (int item : targetColumn.asClasses()) {
@@ -33,8 +39,8 @@ public class GraphvizTreeWriter {
             }
 
             String classLabel = targetColumn.classLabel(classId);
-            int classPercentage = (int) (100.0 * classSizes[classId] / targetColumn.size());
-            table += (String.format("<tr><td>%1$s</td><td align=\"left\">%2$4d (%3$d%%)</td></tr>", classLabel, classSizes[classId], classPercentage));
+            double classPercentage = (double) (100.0 * classSizes[classId] / targetColumn.size());
+            table += String.format("<tr><td>%1$s</td><td align=\"left\">%2$4d (%3$.2f%%)</td></tr>", classLabel, classSizes[classId], classPercentage);
         }
         table += "</table>";
         return table;
@@ -89,8 +95,6 @@ public class GraphvizTreeWriter {
 
     public void write(DecisionTree tree, int targetColumnIndex) throws IOException {
         Graph g = graph("DecisionTree").directed().with(getNode(tree, targetColumnIndex, tree.getPopulation().size()));
-
-        Graphviz.fromGraph(g).render(Format.XDOT).toFile(new File("graphviz/ex2.dot"));
-        Graphviz.fromGraph(g).render(Format.PNG).toFile(new File("graphviz/ex2.png"));
+        Graphviz.fromGraph(g).render(Format.PNG).toFile(outputFile);
     }
 }

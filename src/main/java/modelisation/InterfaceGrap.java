@@ -20,9 +20,17 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import modelisation.builder.DecisionTreeBuilder;
+import modelisation.builder.strategies.ChiSquared;
+import modelisation.builder.strategies.ClassificationError;
+import modelisation.builder.strategies.EntropyReduction;
+import modelisation.builder.strategies.GiniImpurity;
 import modelisation.data.Column;
 import modelisation.data.TrainingData;
 import modelisation.io.CsvDataReader;
+import modelisation.io.GraphvizTreeWriter;
+import modelisation.tree.DecisionTree;
+import org.eclipse.jdt.annotation.Nullable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,12 +43,19 @@ import java.util.stream.IntStream;
 
 /**
  * Classe d'affichage de l'interface graphique
- * @author agnerayq
  *
+ * @author agnerayq
  */
 
 public class InterfaceGrap extends Application {
     TableView<Integer> tbleView; //tableau pour stocker les données
+    TableView<Integer> tbleViewSelect;  // tableau pour stocker les colonnes selectionees
+    @Nullable TrainingData data;
+    List<Integer> indicesColonnes = new ArrayList<>();
+    Integer targetColumnIndex, idColumnIndex;
+    ComboBox<String> cbbColonne = new ComboBox<>();
+
+    DecisionTreeBuilder.Configuration config = DecisionTreeBuilder.DEFAULT_CONFIG;
 
     public static void main(String[] args) {
         launch(args);
@@ -49,7 +64,8 @@ public class InterfaceGrap extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // Creation tableau
-        tbleView = new TableView();
+        tbleView = new TableView<>();
+        tbleViewSelect = new TableView<>();
 
         BorderPane rootPane = new BorderPane();
         AnchorPane acp = new AnchorPane();
@@ -80,50 +96,18 @@ public class InterfaceGrap extends Application {
         sousMnu2.getItems().addAll(carb);
         fichier.getItems().addAll(mItemO, mItemE, mItemEs, mItemEx, mItemImp, mItemQ);
         aide.getItems().addAll(apropos);
-        
-        
-      //appelle à l'indicateur Chi2
-        chi2.setOnAction(new EventHandler<ActionEvent>() {
 
-            @Override
-            public void handle(ActionEvent event) {
-                Indicateurs id = new Indicateurs();
-                //id.chi2(X, Y);
-            }
-        });
-        
-        
+        //appelle à l'indicateur Chi2
+        chi2.setOnAction(event -> config = config.withSplittingStrategy(new ChiSquared()));
+
         //appelle à l'indicateur Gini
-        gini.setOnAction(new EventHandler<ActionEvent>() {
+        gini.setOnAction(event -> config = config.withSplittingStrategy(new GiniImpurity()));
 
-            @Override
-            public void handle(ActionEvent event) {
-                Indicateurs id = new Indicateurs();
-                //id.gini(X, Y);
-            }
-        });
-        
-      //appelle à l'indicateur Entropie
-        entropie.setOnAction(new EventHandler<ActionEvent>() {
+        //appelle à l'indicateur Entropie
+        entropie.setOnAction(event -> config = config.withSplittingStrategy(new EntropyReduction()));
 
-            @Override
-            public void handle(ActionEvent event) {
-                Indicateurs id = new Indicateurs();
-                //id.entropie(X, Y);
-            }
-        });
-        
-        
-      //appelle à l'indicateur Erreur classement
-        erreur.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent event) {
-                Indicateurs id = new Indicateurs();
-                //id.erreurClass(X, Y);
-            }
-        });
-
+        //appelle à l'indicateur Erreur classement
+        erreur.setOnAction(event -> config = config.withSplittingStrategy(new ClassificationError()));
 
         Button ouvrir = new Button();
         Button enregistre = new Button();
@@ -159,31 +143,22 @@ public class InterfaceGrap extends Application {
         parametrage.setGraphic(imageView3);
         imprimer.setGraphic(imageView4);
 
-        //récupérer le CSV bouton ouvrir
-        ouvrir.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent t) {
-                FileChooser fileChooser = new FileChooser();
-                FileChooser.ExtensionFilter extFilterCSV = new FileChooser.ExtensionFilter("CSV files(*.csv)", "*.csv");
-                fileChooser.getExtensionFilters().addAll(extFilterCSV);
-                File csv = fileChooser.showOpenDialog(null);
-                if (csv != null) {
-                    lireCSV(csv);
-                }
-            }
-        });
+        EventHandler<ActionEvent> ouvrirFichier = t -> {
+            FileChooser fileChooser = new FileChooser();
+            FileChooser.ExtensionFilter extFilterCSV = new FileChooser.ExtensionFilter("CSV files(*.csv)", "*.csv");
+            fileChooser.getExtensionFilters().addAll(extFilterCSV);
 
-        //récupérer le CSV ouvrir
-        mItemO.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent t) {
-                FileChooser fileChooser = new FileChooser();
-                FileChooser.ExtensionFilter extFilterCSV = new FileChooser.ExtensionFilter("CSV files(*.csv)", "*.csv");
-                fileChooser.getExtensionFilters().addAll(extFilterCSV);
-                File csv = fileChooser.showOpenDialog(null);
-                if (csv != null) {
-                    lireCSV(csv);
-                }
+            File csv = fileChooser.showOpenDialog(null);
+            if (csv != null) {
+                readDataFromCsv(csv);
             }
-        });
+        };
+
+        //récupérer le CSV bouton ouvrir
+        ouvrir.setOnAction(ouvrirFichier);
+        //récupérer le CSV ouvrir
+        mItemO.setOnAction(ouvrirFichier);
+
         //sauvegarde de l'arbre
         enregistre.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -192,17 +167,38 @@ public class InterfaceGrap extends Application {
                 FileChooser fileChooser = new FileChooser();
 
                 // filtre extension
-                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.txt");
+                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PNG files (*.png)", "*.png");
                 fileChooser.getExtensionFilters().add(extFilter);
 
                 // bo�te de dialogue sauvegarde
                 File save = fileChooser.showSaveDialog(primaryStage);
+                if (save != null) {
+                    List<Integer> dataColumnIndexes = new ArrayList<>(indicesColonnes);
+
+                    // TODO: hardcoded...
+                    idColumnIndex = 2;
+                    targetColumnIndex = 0;
+                    dataColumnIndexes.remove(idColumnIndex);
+                    dataColumnIndexes.remove(targetColumnIndex);
+
+                    System.out.println("building tree using " + config.getSplittingStrategy().getName());
+                    DecisionTreeBuilder treeBuilder = new DecisionTreeBuilder(data, idColumnIndex, targetColumnIndex, dataColumnIndexes, config);
+                    DecisionTree tree = treeBuilder.buildTree();
+
+                    try {
+                        System.out.println("Saving tree to png " + save.getAbsolutePath());
+                        GraphvizTreeWriter treeWriter = new GraphvizTreeWriter(save);
+                        treeWriter.write(tree, targetColumnIndex);
+                        System.out.println("done");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         });
 
 
         parametrage.setOnAction(evt -> {
-
             Stage s = new Stage();
 
             GridPane root = new GridPane();
@@ -211,7 +207,6 @@ public class InterfaceGrap extends Application {
             VBox vbox3 = new VBox();
             ToggleGroup group1 = new ToggleGroup();
             ToggleGroup group2 = new ToggleGroup();
-            ToggleGroup group3 = new ToggleGroup();
             RadioButton rb1 = new RadioButton("Classification");
             RadioButton rb2 = new RadioButton("Regression");
             Label label = new Label("Select ");
@@ -228,51 +223,19 @@ public class InterfaceGrap extends Application {
             HBox hbox = new HBox();
             Slider slider = new Slider();
             VBox vbox4 = new VBox();
-            
-          //appelle à l'indicateur Chi2
-            rb6.setOnAction(new EventHandler<ActionEvent>() {
 
-                @Override
-                public void handle(ActionEvent event) {
-                    Indicateurs id = new Indicateurs();
-                    //id.chi2(X, Y);
-                }
-            });
-            
-            
+            //appelle à l'indicateur Chi2
+            rb6.setOnAction(event -> config = config.withSplittingStrategy(new ChiSquared()));
+
             //appelle à l'indicateur Gini
-            rb7.setOnAction(new EventHandler<ActionEvent>() {
+            rb7.setOnAction(event -> config = config.withSplittingStrategy(new GiniImpurity()));
 
-                @Override
-                public void handle(ActionEvent event) {
-                    Indicateurs id = new Indicateurs();
-                    //id.gini(X, Y);
-                }
-            });
-            
-          //appelle à l'indicateur Entropie
-            rb8.setOnAction(new EventHandler<ActionEvent>() {
+            //appelle à l'indicateur Entropie
+            rb8.setOnAction(event -> config = config.withSplittingStrategy(new EntropyReduction()));
 
-                @Override
-                public void handle(ActionEvent event) {
-                    Indicateurs id = new Indicateurs();
-                    //id.entropie(X, Y);
-                }
-            });
-            
-            
-          //appelle à l'indicateur Erreur classement
-            rb9.setOnAction(new EventHandler<ActionEvent>() {
+            //appelle à l'indicateur Erreur classement
+            rb9.setOnAction(event -> config = config.withSplittingStrategy(new ClassificationError()));
 
-                @Override
-                public void handle(ActionEvent event) {
-                    Indicateurs id = new Indicateurs();
-                    //id.erreurClass(X, Y);
-                }
-            });
-            
-
-            
 
             rb1.setToggleGroup(group1);
             rb1.setSelected(true);
@@ -344,9 +307,7 @@ public class InterfaceGrap extends Application {
 
         //bouton quitter
         mItemQ.setAccelerator(KeyCombination.keyCombination("Ctrl+X"));
-        mItemQ.setOnAction(evt -> {
-            System.exit(0);
-        });
+        mItemQ.setOnAction(evt -> System.exit(0));
 
 
         acp.setPrefHeight(70);
@@ -376,31 +337,22 @@ public class InterfaceGrap extends Application {
 
         AnchorPane acp3 = new AnchorPane();
         ToolBar tlb2 = new ToolBar();
-        //ajout des noms de colonnes pour la selection des colonnes à étudier
-        ComboBox<String> cbbColonne = new ComboBox<String>();
-        TrainingData titanic = new CsvDataReader("datasets/train.csv").read();
-        for(int i =0; i<titanic.getHeaders().size();i++) {
-        	File titan = new File("datasets/train.csv");
-        	lireCSV(titan);
-        	cbbColonne.getItems().add(titanic.getHeaders().get(i));
-        }
-        
+
         Button selectC = new Button("Choix Colonne");
-        Button validerS = new Button("Critere Colonne");
+        CheckBox cbxContinuite = new CheckBox("Colonne continue");
         tlb2.setPrefHeight(20);
         tlb2.setPrefWidth(400);
         tbleView.setPrefHeight(215);
         tbleView.setPrefWidth(400);
         AnchorPane.setBottomAnchor(tlb2, 0.0);
         AnchorPane.setTopAnchor(tbleView, 0.0);
-        tlb2.getItems().addAll(cbbColonne, selectC, validerS);
+        tlb2.getItems().addAll(cbbColonne, selectC, cbxContinuite);
         acp3.getChildren().addAll(tbleView, tlb2);
 
         AnchorPane acp4 = new AnchorPane();
-        TableView tbleView2 = new TableView();
-        tbleView2.setPrefHeight(260);
-        tbleView2.setPrefWidth(400);
-        acp4.getChildren().addAll(tbleView2);
+        tbleViewSelect.setPrefHeight(260);
+        tbleViewSelect.setPrefWidth(400);
+        acp4.getChildren().addAll(tbleViewSelect);
         splitPane2.getItems().addAll(acp3, acp4);
         acp1.getChildren().add(splitPane2);
 
@@ -418,6 +370,28 @@ public class InterfaceGrap extends Application {
         acp2.getChildren().addAll(tlb3, treeView);
         splitPane1.getItems().addAll(acp1, acp2);
         anchorData.getChildren().add(splitPane1);
+
+
+        cbbColonne.setOnAction(e -> {
+            if (data != null) {
+                Column column = data.getColumn(cbbColonne.getValue());
+                cbxContinuite.setSelected(!column.isDiscrete());
+                cbxContinuite.setDisable(!column.canSetContinuity());
+            }
+        });
+
+        selectC.setOnAction(e -> {
+            if (data != null) {
+                Column column = data.getColumn(cbbColonne.getValue());
+                TableColumn<Integer, ?> tableColumn = getTableColumn(column);
+                // addContextMenu(tableColumn);
+                tbleViewSelect.getColumns().add(tableColumn);
+                indicesColonnes.add(column.getIndex());
+                if (column.canSetContinuity()) {
+                    column.setContinuity(cbxContinuite.isSelected() ? Column.Continuity.CONTINUOUS : Column.Continuity.DISCRETE);
+                }
+            }
+        });
 
         //bouton supprimer
         selectC2.setOnAction(new EventHandler<ActionEvent>() {
@@ -440,19 +414,36 @@ public class InterfaceGrap extends Application {
         primaryStage.show();
         scene.setFill(Color.GHOSTWHITE);
 
+        readDataFromCsv(new File("datasets/train.csv"));
     }
+
+    private void readDataFromCsv(File csv) {
+        try {
+            data = lireCSV(csv);
+            creationTableau(data);
+            indicesColonnes.clear();
+            tbleViewSelect.getColumns().clear();
+            targetColumnIndex = idColumnIndex = null;
+            cbbColonne.getItems().setAll(data.getHeaders());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * méthode de lecture d'un CSV à partir d'un fichier File
+     *
      * @param file
      */
-    private void lireCSV(File file) {
+    private TrainingData lireCSV(File file) throws IOException {
         try {
-            TrainingData data = new CsvDataReader(new FileInputStream(file)).read();
-            creationTableau(data);
+            return new CsvDataReader(new FileInputStream(file)).read();
         } catch (FileNotFoundException e) {
             System.out.println("FileNotFoundException :" + e.getMessage());
+            throw e;
         } catch (IOException e) {
             System.out.println("IOException:" + e.getMessage());
+            throw e;
         }
     }
 
@@ -460,16 +451,19 @@ public class InterfaceGrap extends Application {
         if (column.isDiscrete()) {
             TableColumn<Integer, String> tableColumn = new TableColumn<>(column.getHeader());
             tableColumn.setCellValueFactory(idx -> new SimpleStringProperty(column.getValueAsString(idx.getValue())));
+            tableColumn.setUserData(column);
             return tableColumn;
         } else {
             TableColumn<Integer, Number> tableColumn = new TableColumn<>(column.getHeader());
             tableColumn.setCellValueFactory(idx -> new SimpleDoubleProperty(column.getValueAsNumber(idx.getValue()).doubleValue()));
+            tableColumn.setUserData(column);
             return tableColumn;
         }
     }
 
     /**
      * méthode qui crée un tableau et qui ajoute les données du CSV à celui si
+     *
      * @param data
      */
     private void creationTableau(TrainingData data) {
@@ -478,10 +472,12 @@ public class InterfaceGrap extends Application {
             tableColumns.add(getTableColumn(column));
         }
 
+        tbleView.getColumns().setAll(tableColumns);
+
         ObservableList<Integer> rowIndexes = FXCollections.observableArrayList();
         rowIndexes.addAll(IntStream.range(0, data.size()).boxed().collect(Collectors.toList()));
-        tbleView.getColumns().setAll(tableColumns);
         tbleView.setItems(rowIndexes); // ajouts des données au tableView
+        tbleViewSelect.setItems(rowIndexes);
     }
 
 

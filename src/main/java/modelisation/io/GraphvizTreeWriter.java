@@ -52,7 +52,7 @@ public class GraphvizTreeWriter {
         Node result = node(String.valueOf(System.identityHashCode(tree))).with(Shape.RECTANGLE, Label.html(label));
 
         if (targetColumnIndex == tree.getColumnIndex()) {
-            result = result.with(Color.RED, Color.LIGHTGREY.fill(), Style.lineWidth(2));
+            result = result.with(Color.DARKGREEN, Color.LIGHTGREY.fill(), Style.lineWidth(2));
         }
 
         for (DecisionTree child : tree.getChildren()) {

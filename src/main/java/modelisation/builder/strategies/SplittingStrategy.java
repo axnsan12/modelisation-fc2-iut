@@ -2,7 +2,6 @@ package modelisation.builder.strategies;
 
 import modelisation.builder.DecisionTreeBuilder;
 import modelisation.data.Column;
-import org.eclipse.jdt.annotation.NonNull;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -42,7 +41,7 @@ public interface SplittingStrategy {
      * @param <S>    type of split
      * @return the best scoring split
      */
-    @NonNull <S> S chooseBestSplit(Collection<? extends S> splits, ToDoubleFunction<S> score);
+    <S> S chooseBestSplit(Collection<? extends S> splits, ToDoubleFunction<S> score);
 
     /**
      * Return a score for the possible prediction accuracy gains against `targetColumn`

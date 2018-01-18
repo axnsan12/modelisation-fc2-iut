@@ -1,5 +1,5 @@
 import modelisation.builder.DecisionTreeBuilder;
-import modelisation.builder.strategies.GiniSplittingStrategy;
+import modelisation.builder.strategies.Chi2SplittingStrategy;
 import modelisation.data.TrainingData;
 import modelisation.io.CsvDataReader;
 import modelisation.io.GraphvizTreeWriter;
@@ -16,8 +16,8 @@ public class TreeBuilderTest {
             TrainingData titanic = new CsvDataReader("datasets/train.csv").read();
 
             DecisionTreeBuilder.Configuration cfg = DecisionTreeBuilder.DEFAULT_CONFIG
-                    .withMaxDepth(2)
-                    .withSplittingStrategy(new GiniSplittingStrategy());
+                    .withMaxDepth(3)
+                    .withSplittingStrategy(new Chi2SplittingStrategy());
             int idColumnIndex = 2;
             int targetColumnIndex = 0;
 

@@ -7,8 +7,6 @@
     <groupId>fc2.iut</groupId>
     <artifactId>modelisation</artifactId>
     <version>1.0.1</version>
-    <packaging>jar</packaging>
-
 
     <build>
         <resources>
@@ -46,6 +44,7 @@
                             <mainClass>modelisation.InterfaceGrap</mainClass>
                         </manifest>
                     </archive>
+                    <outputDirectory>jar</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>

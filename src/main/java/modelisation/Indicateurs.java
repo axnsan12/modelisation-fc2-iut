@@ -121,7 +121,6 @@ public class Indicateurs {
     }
 
     private static int index(int option, int[] totopt) {
-        // TODO Auto-generated method stub
         for (int i = 0; i < totopt.length; i++) {
             if (totopt[i] == option) {
                 return i;

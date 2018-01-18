@@ -1,6 +1,7 @@
 package modelisation;
 
 import java.util.ArrayList;
+import java.util.function.IntPredicate;
 
 public class FonctionsRegression {
 
@@ -11,65 +12,66 @@ public class FonctionsRegression {
      * @return
      */
     public static double d(int i, double[] Y, double[] X) {
-        double[] fils1 = moyenneFilsSup(i, Y, X);
-        double[] fils2 = moyenneFilsInf(i, Y, X);
-        return fils1[1] + fils2[1];
+        double c = C(i, X);
+        return d(c, Y, X);
+    }
 
+    /**
+     * @param c valeur C teste
+     * @param Y Variable cible
+     * @param X Variable a etudier
+     * @return
+     */
+    public static double d(double c, double[] Y, double[] X) {
+        double fils1 = moyenneFilsSup(c, Y, X);
+        double fils2 = moyenneFilsInf(c, Y, X);
+        return fils1 + fils2;
+    }
+
+    /**
+     * Calculate the population variance of a given array.
+     *
+     * @param Y         population values
+     * @param predicate predicate that decides whether to include a given element;
+     *                  takes the index of the element as argument
+     * @return population variance of {@code X}
+     */
+    public static double variance(double[] Y, IntPredicate predicate) {
+        double moyenne = 0, cmpt = 0, d, sum1 = 0, sum2 = 0;
+        for (int j = 0; j < Y.length; j++) {
+            if (predicate.test(j)) {
+                cmpt++;
+                moyenne = moyenne + Y[j];
+                sum1 = sum1 + Y[j];
+                sum2 = sum2 + Y[j] * Y[j];
+            }
+        }
+        moyenne = moyenne / cmpt;
+        d = moyenne * moyenne + ((sum2 - 2 * moyenne * sum1) / cmpt);
+        return d;
     }
 
     /**
      * Min
      *
-     * @param i indice teste
+     * @param c valeur C teste
      * @param Y Variable cible
-     * @param X Variable a etudier
      * @return
      */
-    private static double[] moyenneFilsSup(int i, double[] Y, double[] X) {
-        double c = C(i, X);
-        double moyenne = 0, cmpt = 0, d, sum1 = 0, sum2 = 0;
-        double combi[] = new double[2];
-        for (int j = 0; j < Y.length; j++) {
-            if (X[j] >= c) {
-                cmpt++;
-                moyenne = moyenne + Y[j];
-                sum1 = sum1 + Y[j];
-                sum2 = sum2 + Y[j] * Y[j];
-            }
-        }
-        moyenne = moyenne / cmpt;
-        d = moyenne * moyenne + ((sum2 - 2 * moyenne * sum1) / cmpt);
-        combi[0] = moyenne;
-        combi[1] = d;
-        return combi;
+    private static double moyenneFilsSup(double c, double[] Y, double[] X) {
+        return variance(Y, idx -> X[idx] >= c);
     }
 
     /**
-     * @param i indice teste
+     * @param c valeur C teste
      * @param Y Variable cible
-     * @param X Variable a etudier
      * @return
      */
-    private static double[] moyenneFilsInf(int i, double[] Y, double[] X) {
-        double c = C(i, X);
-        double moyenne = 0, cmpt = 0, d, sum1 = 0, sum2 = 0;
-        double combi[] = new double[2];
-        for (int j = 0; j < Y.length; j++) {
-            if (X[j] < c) {
-                cmpt++;
-                moyenne = moyenne + Y[j];
-                sum1 = sum1 + Y[j];
-                sum2 = sum2 + Y[j] * Y[j];
-            }
-        }
-        moyenne = moyenne / cmpt;
-        d = moyenne * moyenne + ((sum2 - 2 * moyenne * sum1) / cmpt);
-        combi[0] = moyenne;
-        combi[1] = d;
-        return combi;
+    private static double moyenneFilsInf(double c, double[] Y, double[] X) {
+        return variance(Y, idx -> X[idx] < c);
     }
 
-    private static double C(int i, double[] X) {
+    public static double C(int i, double[] X) {
         return (X[i] + X[i - 1]) / 2;
     }
 

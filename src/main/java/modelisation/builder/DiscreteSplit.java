@@ -3,6 +3,7 @@ package modelisation.builder;
 import modelisation.data.Column;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -24,7 +25,11 @@ public class DiscreteSplit extends Split {
 
     @Override
     protected String[] getBranchLabels(Column column) {
-        int[] classIds = Arrays.stream(column.asClasses()).distinct().toArray();
+        Integer[] classIds = Arrays.stream(column.asClasses())
+                .distinct()
+                .boxed().sorted(Comparator.comparing(column::classLabel))
+                .toArray(Integer[]::new);
+
         branchLabels = new String[classIds.length];
 
         for (int branchIndex = 0; branchIndex < classIds.length; ++branchIndex) {

@@ -1,5 +1,5 @@
 import modelisation.builder.DecisionTreeBuilder;
-import modelisation.builder.strategies.GiniSplittingStrategy;
+import modelisation.builder.strategies.VarianceReduction;
 import modelisation.data.TrainingData;
 import modelisation.io.CsvDataReader;
 import modelisation.io.GraphvizTreeWriter;
@@ -16,13 +16,13 @@ public class RegressionTreeTest {
             TrainingData car93 = new CsvDataReader("datasets/93cars.dat.txt").read();
 
             DecisionTreeBuilder.Configuration cfg = DecisionTreeBuilder.DEFAULT_CONFIG
-                    .withMaxDepth(2)
-                    .withSplittingStrategy(new GiniSplittingStrategy());
+                    .withMaxDepth(7)
+                    .withSplittingStrategy(new VarianceReduction());
 
             int idColumnIndex = 0;
             int targetColumnIndex = 3;
 
-            List<Integer> dataColumns = Stream.of("horsepower", "wheelbase", "citympg", "hwmpg")
+            List<Integer> dataColumns = Stream.of("horsepower", "wheelbase", "citympg", "hwmpg", "airbag", "drivetrain", "manual", "domestic")
                     .map(name -> car93.getColumn(name).getIndex())
                     .collect(Collectors.toList());
 

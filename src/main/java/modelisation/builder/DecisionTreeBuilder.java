@@ -1,9 +1,8 @@
 package modelisation.builder;
 
-import modelisation.builder.strategies.Chi2SplittingStrategy;
+import modelisation.builder.strategies.ChiSquared;
 import modelisation.builder.strategies.SplittingStrategy;
 import modelisation.data.Column;
-import modelisation.data.SplitColumn;
 import modelisation.data.TrainingData;
 import modelisation.tree.DecisionTree;
 import org.eclipse.jdt.annotation.NonNull;
@@ -18,7 +17,7 @@ public class DecisionTreeBuilder {
             .withMinSplitSize(7)
             .withHomogenityThreshold(75)
             .withMaxDepth(3)
-            .withSplittingStrategy(new Chi2SplittingStrategy());
+            .withSplittingStrategy(new ChiSquared());
 
     protected TrainingData trainingData;
     protected int idColumnIndex, targetColumnIndex;
@@ -50,8 +49,12 @@ public class DecisionTreeBuilder {
         }
 
         checkInput(trainingData.getColumns(), idColumnIndex, targetColumnIndex, this.dataColumnIndexes);
-        if (!trainingData.getColumn(targetColumnIndex).isDiscrete()) {
-            throw new UnsupportedOperationException("DecisionTreeBuilder does not handle regression trees (for now)!");
+        Column targetColumn = trainingData.getColumn(targetColumnIndex);
+        SplittingStrategy splittingStrategy = config.getSplittingStrategy();
+        if (!splittingStrategy.supportsTarget(targetColumn)) {
+            String continuity = targetColumn.isDiscrete() ? "discrete" : "continuous";
+            String column = "(" + targetColumn.getHeader() + ", " + continuity + ")";
+            throw new UnsupportedOperationException(splittingStrategy.getName() + " can not be used to split on " + column);
         }
     }
 
@@ -92,24 +95,24 @@ public class DecisionTreeBuilder {
     private Optional<SplitScore> chooseBestSplit(TrainingData data, @NonNull Set<Integer> ignoring) {
         Column targetColumn = data.getColumn(targetColumnIndex);
         ArrayList<SplitScore> splits = new ArrayList<>(data.size());
+        final SplittingStrategy splittingStrategy = config.getSplittingStrategy();
 
         // we go through all unused columns and calculate the split score for each
         for (int columnIndex = 0; columnIndex < data.size(); ++columnIndex) {
             if (dataColumnIndexes.contains(columnIndex) && !ignoring.contains(columnIndex)) {
                 final Split split;
-                Column splitColumn = data.getColumn(columnIndex);
+                final double score;
+                final Column splitColumn = data.getColumn(columnIndex);
 
                 if (!splitColumn.isDiscrete()) {
-                    // a column of continuous values may need to be transformed into classes before splitting metrics
-                    // can be applied to it; the algorithm used is a simple binary split on a chosen threshold value
-                    double splitValue = chooseSplitValue(splitColumn);
+                    double splitValue = splittingStrategy.chooseSplitValue(targetColumn, splitColumn);
                     split = new ThresholdSplit(splitValue);
-                    splitColumn = SplitColumn.fromColumn(splitColumn, splitValue);
+                    score = splittingStrategy.evaluateSplit(targetColumn, splitColumn, splitValue);
                 } else {
                     split = new DiscreteSplit();
+                    score = splittingStrategy.evaluateSplit(targetColumn, splitColumn);
                 }
 
-                double score = config.getSplittingStrategy().evaluateSplit(targetColumn, splitColumn);
                 splits.add(new SplitScore(columnIndex, split, score));
             }
         }
@@ -149,17 +152,17 @@ public class DecisionTreeBuilder {
     }
 
     /**
-     * Check if an array is homogeneous - i.e. if there is any single value
+     * Check if a column is homogeneous - i.e. if there is any single value
      * which satisfies {@link Configuration#getHomogenityThreshold()}.
      *
      * @param column array to check for homogenity
      * @return true if {@code column} is homogeneous
      */
-    private boolean isHomogeneous(int[] column) {
-        return Arrays.stream(column).boxed()
+    private boolean isHomogeneous(Column column) {
+        return column.isDiscrete() && Arrays.stream(column.asClasses()).boxed()
                 .collect(Collectors.groupingBy(v -> v, Collectors.counting()))
                 .entrySet().stream()
-                .anyMatch(e -> (e.getValue() * 100.0 / column.length) > config.getHomogenityThreshold());
+                .anyMatch(e -> (e.getValue() * 100.0 / column.size()) > config.getHomogenityThreshold());
     }
 
     /**
@@ -184,7 +187,7 @@ public class DecisionTreeBuilder {
         TreeSet<Integer> triedColumns = new TreeSet<>();
 
         // we only try a split if the dataset is not too small and if it is not already homogeneous
-        if (data.size() >= config.getMinSplitSize() && !isHomogeneous(targetColumn.asClasses()) && depth <= config.getMaxDepth()) {
+        if (data.size() >= config.getMinSplitSize() && !isHomogeneous(targetColumn) && depth <= config.getMaxDepth()) {
             Optional<SplitScore> chosenSplit;
             while ((chosenSplit = chooseBestSplit(data, triedColumns)).isPresent()) {
                 SplitScore split = chosenSplit.get();
@@ -204,41 +207,6 @@ public class DecisionTreeBuilder {
 
         // if no split can be made, return a terminal node
         return new DecisionTree(targetColumnIndex, targetColumn.getHeader(), data);
-    }
-
-    /**
-     * Calculate the median value of an array.
-     * <p>
-     * The median of a set of numbers is defined as the value X for which
-     * there are as many elements < X as there are > X.
-     *
-     * @return median value
-     */
-    private static double median(double[] array) {
-        array = Arrays.copyOf(array, array.length);
-        Arrays.sort(array);
-
-        int midLow = (int) Math.round(Math.floor((array.length - 1.0) / 2.0));
-        int midHigh = (int) Math.round(Math.ceil((array.length - 1.0) / 2.0));
-        if (midLow == midHigh) {
-            return array[midLow];
-        } else {
-            return (array[midLow] + array[midHigh]) / 2.0;
-        }
-    }
-
-    /**
-     * For a continous-valued column that needs to be reduced to a discrete-valued column,
-     * choose an appropriate value to split on.
-     * <p>
-     * A column is reduced by choosing a value to split on, and classing the column in two categories -
-     * <em>below</em> the split value and <em>equal or above</em> the split value.
-     *
-     * @param column continuous column
-     * @return desired split value
-     */
-    protected double chooseSplitValue(Column column) {
-        return median(column.asDouble());
     }
 
     public static class Configuration implements Cloneable {

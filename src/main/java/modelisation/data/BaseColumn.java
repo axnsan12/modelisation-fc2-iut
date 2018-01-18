@@ -96,6 +96,21 @@ package modelisation.data;
         return getClassCount();
     }
 
+    @Override
+    public String classLabel(int classId) {
+        if (!isDiscrete()) {
+            throw new IllegalStateException("classLabel can only be called on columns which are interpreted as discrete variables");
+        }
+        return getClassLabel(classId);
+    }
+
+    /**
+     * Implementation for {@link #asClasses()}
+     * @param classId see {@link #asClasses()}
+     * @return see {@link #asClasses()}
+     */
+    protected abstract String getClassLabel(int classId);
+
     /**
      * Implementation for {@link #classCount()}
      */

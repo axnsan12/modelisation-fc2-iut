@@ -22,7 +22,6 @@ public class DecisionTree {
      * @param columnName  the name of the column this node is splitting on
      * @param population  trainng set partition matched by this node
      * @see #getColumnIndex()
-     * @see #getPopulationCount()
      */
     public DecisionTree(int columnIndex, String columnName, TrainingData population) {
         this.columnIndex = columnIndex;
@@ -121,12 +120,9 @@ public class DecisionTree {
     }
 
     /**
-     * The number of lines from the training set that were matched by the path from the root
-     * of the tree up to this node.
-     *
-     * @return number of trainng set rows matched by this node
+     * Get the training set partition that was matched into this node.
      */
-    public int getPopulationCount() {
-        return population.size();
+    public TrainingData getPopulation() {
+        return population;
     }
 }

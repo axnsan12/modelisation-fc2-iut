@@ -276,8 +276,8 @@ public class DecisionTreeBuilder {
          * The minimum number of individuals in the training set that must be matched by a node. If a split would
          * generate a node that would drop below this minimum size, the split will not be made.
          * <p>
-         * In effect, this ensures that {@link DecisionTree#getPopulationCount()} will return at least
-         * {@code minNodeSize} for every node in a tree generated with this configuration.
+         * In effect, this ensures that {@link DecisionTree#getPopulation()} will return a dataset of at least
+         * {@code minNodeSize} rows for every node in a tree generated with this configuration.
          * <p>
          * <b>NOTE:</b> minNodeSize should be less than {@link #getMinSplitSize()}.
          */

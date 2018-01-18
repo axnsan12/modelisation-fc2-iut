@@ -185,6 +185,50 @@ public class InterfaceGrap extends Application {
             HBox hbox = new HBox();
             Slider slider = new Slider();
             VBox vbox4 = new VBox();
+            
+          //appelle à l'indicateur Chi2
+            rb6.setOnAction(new EventHandler<ActionEvent>() {
+
+                @Override
+                public void handle(ActionEvent event) {
+                    Indicateurs id = new Indicateurs();
+                    //id.chi2(X, Y);
+                }
+            });
+            
+            
+            //appelle à l'indicateur Gini
+            rb7.setOnAction(new EventHandler<ActionEvent>() {
+
+                @Override
+                public void handle(ActionEvent event) {
+                    Indicateurs id = new Indicateurs();
+                    //id.gini(X, Y);
+                }
+            });
+            
+          //appelle à l'indicateur Entropie
+            rb8.setOnAction(new EventHandler<ActionEvent>() {
+
+                @Override
+                public void handle(ActionEvent event) {
+                    Indicateurs id = new Indicateurs();
+                    //id.entropie(X, Y);
+                }
+            });
+            
+          //appelle à l'indicateur Erreur classement
+            rb9.setOnAction(new EventHandler<ActionEvent>() {
+
+                @Override
+                public void handle(ActionEvent event) {
+                    Indicateurs id = new Indicateurs();
+                    //id.erreurClass(X, Y);
+                }
+            });
+            
+
+            
 
             rb1.setToggleGroup(group1);
             rb1.setSelected(true);
@@ -291,7 +335,7 @@ public class InterfaceGrap extends Application {
         ComboBox<String> cbbColonne = new ComboBox<String>();
         cbbColonne.getItems().addAll("Choix Colonne", "Choix ligne", "Choix cellule");
         Button selectC = new Button("Choix Colonne");
-        Button validerS = new Button("Crit�re Colonne");
+        Button validerS = new Button("Critere Colonne");
         tlb2.setPrefHeight(20);
         tlb2.setPrefWidth(400);
         tbleView.setPrefHeight(215);

@@ -376,8 +376,15 @@ public class InterfaceGrap extends Application {
 
         AnchorPane acp3 = new AnchorPane();
         ToolBar tlb2 = new ToolBar();
+        //ajout des noms de colonnes pour la selection des colonnes à étudier
         ComboBox<String> cbbColonne = new ComboBox<String>();
-        cbbColonne.getItems().addAll("Choix Colonne", "Choix ligne", "Choix cellule");
+        TrainingData titanic = new CsvDataReader("datasets/train.csv").read();
+        for(int i =0; i<titanic.getHeaders().size();i++) {
+        	File titan = new File("datasets/train.csv");
+        	lireCSV(titan);
+        	cbbColonne.getItems().add(titanic.getHeaders().get(i));
+        }
+        
         Button selectC = new Button("Choix Colonne");
         Button validerS = new Button("Critere Colonne");
         tlb2.setPrefHeight(20);

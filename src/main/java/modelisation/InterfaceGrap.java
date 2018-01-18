@@ -80,6 +80,49 @@ public class InterfaceGrap extends Application {
         sousMnu2.getItems().addAll(carb);
         fichier.getItems().addAll(mItemO, mItemE, mItemEs, mItemEx, mItemImp, mItemQ);
         aide.getItems().addAll(apropos);
+        
+        
+      //appelle à l'indicateur Chi2
+        chi2.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                Indicateurs id = new Indicateurs();
+                //id.chi2(X, Y);
+            }
+        });
+        
+        
+        //appelle à l'indicateur Gini
+        gini.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                Indicateurs id = new Indicateurs();
+                //id.gini(X, Y);
+            }
+        });
+        
+      //appelle à l'indicateur Entropie
+        entropie.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                Indicateurs id = new Indicateurs();
+                //id.entropie(X, Y);
+            }
+        });
+        
+        
+      //appelle à l'indicateur Erreur classement
+        erreur.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                Indicateurs id = new Indicateurs();
+                //id.erreurClass(X, Y);
+            }
+        });
 
 
         Button ouvrir = new Button();
@@ -216,6 +259,7 @@ public class InterfaceGrap extends Application {
                     //id.entropie(X, Y);
                 }
             });
+            
             
           //appelle à l'indicateur Erreur classement
             rb9.setOnAction(new EventHandler<ActionEvent>() {

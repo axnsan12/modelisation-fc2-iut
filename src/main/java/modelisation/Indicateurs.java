@@ -102,51 +102,7 @@ public class Indicateurs {
 		return entropie;
 	}
 
-	/**
-	 * 
-	 * @param X : vecteur d'entiers
-	 * @return Retourne la moyenne entre la plous grande valeur et la plus petite valeur
-	 */
-	public static double getSplitValue(int[]X)
-	{
-		return (maximum(X)+minimum(X))/2;
-	}
-	
-	/**
-	 * 
-	 * @param X
-	 * @param nblig
-	 * @param pourcentage
-	 * @return
-	 */
-	public static boolean shouldDiscretize(int []X, int nblig,int pourcentage)
-	{
-		int []totopt=calculOption(X);
-		return X.length > nblig && totopt.length > pourcentage*X.length/100;
-	}
-	
-	//Transforme une variable continue en variable discrète.
-	public static int[] faireEcarts(int []X, double splitValue, int nblig, int pourcentage)
-	{
-		int []Xbis;
-		Xbis = new int[X.length];
-		
-		if (shouldDiscretize(X, nblig, pourcentage))
-		{
-			for (int i=0;i<Xbis.length;i++)
-			{
-				if (Xbis[i]<splitValue) {Xbis[i]=1;}
-				else {Xbis[i]=2;}
-			}
-		}
-		else
-		{
-			Xbis=X;
-		}
-		return Xbis;
-	}
-	
-	//Afficher le tableau de contingence de deux vecteurs passes en parametres 
+		/*Afficher le tableau de contingence de deux vecteurs passes en parametres 
 			public static void afficherTabCont(int []X, int[] Y)
 			{
 				int [][] tabCont = tabCont(X,Y);
@@ -179,14 +135,15 @@ public class Indicateurs {
 					{
 						System.out.print("| ");
 					}
-					else
+					else/
 					{
 						System.out.println("| ");
 					}
 				}}
 				
-			}
+			}*/
 			
+		
 			//Renvoie la table de contingence de deux vecteurs passes en parametres
 			private static int[][] tabCont(int[] X, int[] Y) {
 				int [][] tab;
@@ -234,110 +191,8 @@ public class Indicateurs {
 				return totopt.length;
 			}
 
-	
-	//Arbre de regression
-			
-			/**
-			 * 
-			 * @param i indice teste
-			 * @param Y Variable cible
-			 * @param X Variable a etudier
-			 * @return
-			 */
-	public static double d(int i, double []Y, double [] X)
-	{
-		double [] fils1 = moyenneFilsSup(i,Y,X);
-		double [] fils2 = moyenneFilsInf(i,Y,X);
-		return fils1[1] + fils2[1];
-		
-	}
-			
-			/**
-			 * Min
-			 * @param i indice teste
-			 * @param Y Variable cible
-			 * @param X Variable a etudier
-			 * @return
-			 */
-	private static double [] moyenneFilsSup(int i, double []Y, double [] X)
-	{
-		double c = C(i,X);
-		double moyenne=0,cmpt=0,d=0,sum1=0,sum2=0;
-		double combi[] = new double[2];
-		for (int j=0;j<Y.length;j++)
-		{
-			if (X[j] >= c)
-			{
-				cmpt ++;
-				moyenne = moyenne + Y[j];
-				sum1 = sum1 + Y[j];
-				sum2 = sum2 + Y[j]*Y[j];
-			}
-		}
-		moyenne = moyenne/cmpt;
-		d = moyenne*moyenne +((sum2-2*moyenne*sum1)/cmpt);
-		combi[0]=moyenne;
-		combi[1]=d;
-		return combi;
-	}
-	
-			/**
-			 * 
-			 * @param i indice teste
-			 * @param Y Variable cible
-			 * @param X Variable a etudier
-			 * @return
-			 */
-	private static double[] moyenneFilsInf(int i, double []Y, double [] X)
-	{
-		double c = C(i,X);
-		double moyenne=0,cmpt=0,d=0,sum1=0,sum2=0;
-		double combi[] = new double[2];
-		for (int j=0;j<Y.length;j++)
-		{
-			if (X[j] < c)
-			{
-				cmpt ++;
-				moyenne = moyenne + Y[j];
-				sum1 = sum1 + Y[j];
-				sum2 = sum2 + Y[j]*Y[j];
-			}
-		}
-		moyenne = moyenne/cmpt;
-		d = moyenne*moyenne +((sum2-2*moyenne*sum1)/cmpt);
-		combi[0]=moyenne;
-		combi[1]=d;
-		return combi;
-	}
-	
-	private static double C(int i,double[] X)
-	{
-		return (X[i]+X[i-1])/2;
-	}
-	
 	//Outils internes
-	
-	private static int minimum(int[] x) {
-		int min=x[0];
-		for (int i=1;i<x.length;i++)
-		{
-			if (min > x[i]) {min = x[i];}
-		}
-		return min;
-	}
-	
 
-	private static int maximum(int[] x) {
-		// TODO Auto-generated method stub
-		int max=x[0];
-		for (int i=1;i<x.length;i++)
-		{
-			if (max < x[i]) {max = x[i];}
-		}
-		return max;
-	}
-
-	
 
 		//Renvoie un vecteur contenant la liste des options possibles.
 		private static int[] calculOption(int[] x) {

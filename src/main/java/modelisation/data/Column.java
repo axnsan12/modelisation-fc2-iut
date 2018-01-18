@@ -70,6 +70,16 @@ public interface Column {
     int classCount();
 
     /**
+     * Return the label for the given class of a discrete column. Can only be used if {@link #isDiscrete()} returns true.
+     *
+     * @param classId the class ID in [0...N)
+     * @return class name/label
+     * @see #asClasses()
+     * @see #classCount()
+     */
+    String classLabel(int classId);
+
+    /**
      * @return count of valuet in the column
      */
     default int size() {

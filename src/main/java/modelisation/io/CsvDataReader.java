@@ -78,10 +78,7 @@ public class CsvDataReader {
                 CSVReader testReader = getReader(sep, quot);
                 try {
                     String[] headers = testReader.readNext();
-                    ArrayList<String[]> lines = new ArrayList<>(SNIFF_SAMPLE);
-                    for (int i = 0; i < SNIFF_SAMPLE; ++i) {
-                        lines.add(testReader.readNext());
-                    }
+                    List<String[]> lines = readLines(testReader, SNIFF_SAMPLE);
 
                     TrainingData data = new TrainingData(headers, lines);
                     if (maxColumns < data.getColumns().size()) {
@@ -103,6 +100,25 @@ public class CsvDataReader {
         System.out.println("[CSV] sniffed separator " + separator + " and quote " + quote);
     }
 
+    private static List<String[]> readLines(CSVReader reader, int limit) throws IOException {
+        limit = limit > 0 ? limit : Integer.MAX_VALUE;
+        ArrayList<String[]> lines = new ArrayList<>();
+        String[] line;
+        while ((line = reader.readNext()) != null && lines.size() < limit) {
+            if (line.length == 0 || (line.length == 1 && line[0].trim().isEmpty())) {
+                // skip whitespace lines
+                continue;
+            }
+            for (int i = 0; i < line.length; ++i) {
+                // trim surrounding whitespace from values
+                line[i] = line[i].trim();
+            }
+            lines.add(line);
+        }
+
+        return lines;
+    }
+
     private CSVReader getReader(char separator, char quote) throws IOException {
         final Reader reader;
         if (stream == null) {
@@ -113,6 +129,7 @@ public class CsvDataReader {
         }
         return new CSVReaderBuilder(reader)
                 .withCSVParser(new CSVParserBuilder()
+                        .withIgnoreLeadingWhiteSpace(true)
                         .withSeparator(separator)
                         .withQuoteChar(quote)
                         .withIgnoreQuotations(quote == '\0')
@@ -130,7 +147,7 @@ public class CsvDataReader {
     public TrainingData read() throws IOException {
         try (CSVReader csvReader = getReader()) {
             String[] headers = csvReader.readNext();
-            List<String[]> lines = csvReader.readAll();
+            List<String[]> lines = readLines(csvReader, Integer.MAX_VALUE);
             return new TrainingData(headers, lines);
         }
     }

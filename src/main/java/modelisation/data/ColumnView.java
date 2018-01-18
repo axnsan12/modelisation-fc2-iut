@@ -65,6 +65,11 @@ import java.util.List;
     }
 
     @Override
+    public String classLabel(int classId) {
+        return realColumn.classLabel(classId);
+    }
+
+    @Override
     public int size() {
         return indexMapping.length;
     }

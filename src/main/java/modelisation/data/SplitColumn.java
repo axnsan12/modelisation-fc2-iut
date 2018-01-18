@@ -20,7 +20,12 @@ public class SplitColumn extends BaseColumn {
      * @see modelisation.builder.ThresholdSplit
      */
     public static SplitColumn fromColumn(Column column, double splitValue) {
-        return new SplitColumn(column.getIndex(), column.getHeader(), column.asDouble(), splitValue);
+        return new SplitColumn(column.getIndex(), column.getHeader() + " ~" + splitValue, column.asDouble(), splitValue);
+    }
+
+    @Override
+    public int getIndex() {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -36,6 +41,11 @@ public class SplitColumn extends BaseColumn {
     @Override
     protected int getClassCount() {
         return 2;
+    }
+
+    @Override
+    protected String getClassLabel(int classId) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

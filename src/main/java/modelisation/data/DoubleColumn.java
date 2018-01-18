@@ -29,6 +29,11 @@ package modelisation.data;
     }
 
     @Override
+    protected String getClassLabel(int classId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String getValueAsString(int index) {
         return String.valueOf(data[index]);
     }

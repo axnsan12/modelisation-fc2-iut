@@ -61,13 +61,9 @@ import java.util.HashMap;
      * @param index row index
      * @return value as string
      */
+    @Override
     public String getValueAsString(int index) {
-        if (!isDiscrete() || classedData == null || classLabels == null) {
-            throw new IllegalStateException("PossiblyDiscreteColumn::getValueAsString can only " +
-                    "be called on a discrete column, after calling ::classifyData");
-        }
-        int value = classedData[index];
-        return classLabels[value];
+        return getClassLabel(classedData[index]);
     }
 
     @Override
@@ -77,5 +73,14 @@ import java.util.HashMap;
                     "be called on a discrete column, after calling ::classifyData");
         }
         return classLabels.length;
+    }
+
+    @Override
+    protected String getClassLabel(int classId) {
+        if (!isDiscrete() || classedData == null || classLabels == null) {
+            throw new IllegalStateException("PossiblyDiscreteColumn::getClassLabel can only " +
+                    "be called on a discrete column, after calling ::classifyData");
+        }
+        return classLabels[classId];
     }
 }

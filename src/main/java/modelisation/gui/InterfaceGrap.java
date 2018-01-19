@@ -101,8 +101,6 @@ public class InterfaceGrap extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
         scene.setFill(Color.GHOSTWHITE);
-
-        readDataFromCsv(new File("datasets/train.csv"));
     }
     /**
      * methode de verification de la selection des colonnes

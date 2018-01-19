@@ -38,7 +38,7 @@ public class VarianceReduction implements SplittingStrategy {
 
     @Override
     public String getName() {
-        return "variance reduction";
+        return "Variance";
     }
 
     @Override

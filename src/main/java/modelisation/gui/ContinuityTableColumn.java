@@ -1,6 +1,8 @@
 package modelisation.gui;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -14,7 +16,9 @@ import java.util.stream.Collectors;
 
 
 public class ContinuityTableColumn extends TableColumn<Column, Column.Continuity> {
-    public ContinuityTableColumn(String text) {
+    private BooleanProperty isRegressionTree = new SimpleBooleanProperty();
+
+    public ContinuityTableColumn(String text, ObjectProperty<Column> targetColumn) {
         super(text);
 
         this.setCellValueFactory(item -> {
@@ -24,17 +28,30 @@ public class ContinuityTableColumn extends TableColumn<Column, Column.Continuity
             prop.addListener((observable, oldValue, newValue) -> {
                 if (newValue != null) {
                     column.setContinuity(newValue);
+                    if (column.equals(targetColumn.getValue())) {
+                        isRegressionTree.setValue(newValue == Column.Continuity.CONTINUOUS);
+                    }
+                }
+            });
+
+            isRegressionTree.addListener((observable, wasRegression, isRegression) -> {
+                if (column.equals(targetColumn.getValue())) {
+                    prop.setValue(isRegression ? Column.Continuity.CONTINUOUS : Column.Continuity.DISCRETE);
                 }
             });
 
             return prop;
         });
-        this.setCellFactory(tc -> new ContinuityTableCell(
-                new ContinuityStringConverter(),
-                Column.Continuity.DISCRETE, Column.Continuity.CONTINUOUS
-        ));
+        this.setCellFactory(tc -> new ContinuityTableCell(Column.Continuity.DISCRETE, Column.Continuity.CONTINUOUS));
+        targetColumn.addListener((observable, oldValue, newValue) -> {
+            isRegressionTree.setValue(newValue != null && !newValue.isDiscrete());
+        });
 
-        this.setMinWidth(90);
+        this.setMinWidth(100);
+    }
+
+    public BooleanProperty isRegressionTreeProperty() {
+        return isRegressionTree;
     }
 
     private static class ContinuityStringConverter extends StringConverter<Column.Continuity> {
@@ -59,8 +76,8 @@ public class ContinuityTableColumn extends TableColumn<Column, Column.Continuity
     }
 
     private static class ContinuityTableCell extends ComboBoxTableCell<Column, Column.Continuity> {
-        public ContinuityTableCell(StringConverter<Column.Continuity> converter, Column.Continuity... items) {
-            super(converter, items);
+        public ContinuityTableCell(Column.Continuity... items) {
+            super(new ContinuityStringConverter(), items);
             setEditable(true);
         }
 

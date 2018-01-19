@@ -2,7 +2,8 @@ package modelisation.gui;
 
 
 import javafx.application.Application;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -131,12 +132,16 @@ public class InterfaceGrap extends Application {
 
     private DecisionTree buildTree(Column targetColumn, Column idColumn) {
         System.out.println("building tree using " + config.getSplittingStrategy().getName());
+        DecisionTreeBuilder.Configuration realConfig = config;
+        if (!targetColumn.isDiscrete()) {
+            realConfig = realConfig.withSplittingStrategy(new VarianceReduction());
+        }
         DecisionTreeBuilder treeBuilder = new DecisionTreeBuilder(
                 data,
                 idColumn.getIndex(),
                 targetColumn.getIndex(),
                 tbleViewSelect.getDataColumnIndexes(),
-                config
+                realConfig
         );
         return treeBuilder.buildTree();
     }
@@ -190,17 +195,11 @@ public class InterfaceGrap extends Application {
     }
 
     private TableColumn<Integer, ?> getTableColumn(Column column) {
-        if (column.isDiscrete()) {
-            TableColumn<Integer, String> tableColumn = new TableColumn<>(column.getHeader());
-            tableColumn.setCellValueFactory(idx -> new SimpleStringProperty(column.getValueAsString(idx.getValue())));
-            tableColumn.setUserData(column);
-            return tableColumn;
-        } else {
-            TableColumn<Integer, Number> tableColumn = new TableColumn<>(column.getHeader());
-            tableColumn.setCellValueFactory(idx -> new SimpleDoubleProperty(column.getValueAsNumber(idx.getValue()).doubleValue()));
-            tableColumn.setUserData(column);
-            return tableColumn;
-        }
+        TableColumn<Integer, String> tableColumn = new TableColumn<>(column.getHeader());
+        tableColumn.setCellValueFactory(idx -> new SimpleStringProperty(column.getValueAsString(idx.getValue())));
+        tableColumn.setUserData(column);
+        tableColumn.setSortable(false);
+        return tableColumn;
     }
 
     /**
@@ -311,11 +310,22 @@ public class InterfaceGrap extends Application {
 
         RadioButton rbClassif = new RadioButton("Classification");
         RadioButton rbRegress = new RadioButton("Regression");
+        BooleanProperty isRegressionTree = tbleViewSelect.isRegressionTreeProperty();
+        ObjectProperty<Column> targetColumn = tbleViewSelect.targetColumnProperty();
 
         ToggleGroup treeTypeRadioGroup = new ToggleGroup();
         rbClassif.setToggleGroup(treeTypeRadioGroup);
         rbRegress.setToggleGroup(treeTypeRadioGroup);
-        rbClassif.setSelected(true);
+        rbClassif.setSelected(!isRegressionTree.getValue());
+        rbRegress.setSelected(isRegressionTree.getValue());
+        treeTypeRadioGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            isRegressionTree.setValue(newValue == rbRegress);
+        });
+        targetColumn.addListener((observable, oldValue, newValue) -> {
+            boolean disable = newValue == null || !newValue.canSetContinuity();
+            rbClassif.setDisable(disable);
+            rbRegress.setDisable(disable);
+        });
 
         VBox vboxTreeType = new VBox();
         vboxTreeType.getChildren().addAll(rbClassif, rbRegress);
@@ -330,12 +340,13 @@ public class InterfaceGrap extends Application {
                 new EntropyReduction(),
                 new ClassificationError()
         );
-        Map<SplittingStrategy, RadioButton> radioButtons = metrics.stream()
+        Map<SplittingStrategy, RadioButton> metricRbs = metrics.stream()
                 .collect(Collectors.toMap(split -> split, split -> {
                     RadioButton radio = new RadioButton(split.getName());
                     radio.setUserData(split);
                     radio.setToggleGroup(metricRadioGroup);
                     radio.setSelected(split.equals(config.getSplittingStrategy()));
+                    radio.setVisible(!isRegressionTree.getValue());
                     return radio;
                 }));
         metricRadioGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
@@ -345,8 +356,20 @@ public class InterfaceGrap extends Application {
             }
         });
 
+        isRegressionTree.addListener((observable, wasRegression, isRegression) -> {
+            if (isRegression) {
+                rbRegress.setSelected(true);
+            } else {
+                rbClassif.setSelected(true);
+            }
+
+            for (RadioButton rb : metricRbs.values()) {
+                rb.setVisible(!isRegression);
+            }
+        });
+
         VBox vboxMetrics = new VBox();
-        vboxMetrics.getChildren().addAll(radioButtons.values());
+        vboxMetrics.getChildren().addAll(metricRbs.values());
         vboxMetrics.setAlignment(Pos.TOP_LEFT);
         vboxMetrics.setSpacing(3);
         root.add(vboxMetrics, 1, 1);

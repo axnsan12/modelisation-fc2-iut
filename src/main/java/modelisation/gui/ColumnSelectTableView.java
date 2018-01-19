@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public class ColumnSelectTableView extends TableView<Column> {
     ObjectProperty<Column> targetColumn, idColumn;
     SetProperty<Column> selectedColumns;
+    private ContinuityTableColumn continuityTableColumn;
 
     public ColumnSelectTableView() {
         super();
@@ -76,10 +77,14 @@ public class ColumnSelectTableView extends TableView<Column> {
 
         this.setEditable(true);
 
-        this.getColumns().add(new ContinuityTableColumn("Continuite"));
+        this.getColumns().add(continuityTableColumn = new ContinuityTableColumn("Continuite", targetColumn));
         this.getColumns().add(new CheckBoxTableColumn<>("Inclus", selectedColumns));
         this.getColumns().add(new RadioTableColumn<>("Cible", targetColumn));
         this.getColumns().add(new RadioTableColumn<>("ID", idColumn));
+    }
+
+    public BooleanProperty isRegressionTreeProperty() {
+        return continuityTableColumn.isRegressionTreeProperty();
     }
 
 

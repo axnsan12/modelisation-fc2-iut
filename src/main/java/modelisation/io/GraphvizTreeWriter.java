@@ -15,7 +15,9 @@ import modelisation.tree.DecisionTree;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static guru.nidi.graphviz.model.Factory.*;
 
@@ -33,6 +35,7 @@ public class GraphvizTreeWriter {
         }
 
         String table = "<table color=\"black\" cellspacing=\"0\" cellpadding=\"2\">";
+        ArrayList<String> classText = new ArrayList<>();
         for (int classId = 0; classId < classSizes.length; ++classId) {
             if (classSizes[classId] == 0) {
                 continue;
@@ -40,8 +43,10 @@ public class GraphvizTreeWriter {
 
             String classLabel = targetColumn.classLabel(classId);
             double classPercentage = (double) (100.0 * classSizes[classId] / targetColumn.size());
-            table += String.format("<tr><td>%1$s</td><td align=\"left\">%2$4d (%3$.2f%%)</td></tr>", classLabel, classSizes[classId], classPercentage);
+            classText.add(String.format("<tr><td>%1$s</td><td align=\"left\">%2$4d (%3$.2f%%)</td></tr>",
+                    classLabel, classSizes[classId], classPercentage));
         }
+        table += classText.stream().sorted().collect(Collectors.joining());
         table += "</table>";
         return table;
     }

@@ -9,7 +9,7 @@ public class FonctionsRegression {
      * @param i indice teste
      * @param Y Variable cible
      * @param X Variable a etudier
-     * @return
+     * @return Retourne la variance relative a un vecteur et a un indice précis par rapport à la variable mesuree
      */
     public static double d(int i, double[] Y, double[] X) {
         double c = C(i, X);
@@ -70,12 +70,24 @@ public class FonctionsRegression {
     private static double moyenneFilsInf(double c, double[] Y, double[] X) {
         return variance(Y, idx -> X[idx] < c);
     }
-
+    
+    /**
+     * 
+     * @param i référence d'indice a tester
+     * @param X vecteur à tester
+     * @return Retourne le facteur c a pour un vecteur et un indice precis
+     */
     public static double C(int i, double[] X) {
         return (X[i] + X[i - 1]) / 2;
     }
 
-
+    /**
+     * 
+     * @param Y vecteur de double, variable a etudier
+     * @param X vecteur de double, vecteur a evaluer
+     * @param mincut nombre minimum de personnes par ensemble
+     * @return Retourne un ensemble de deux double contenant les quantité presente dans chacun des deux sous fils
+     */
     public static double[] ensembleFils(double[] Y, double[] X, int mincut) {
         double[] fils = {0, 0};
         int indiceVariance = meilleureVarianceXi(Y, X, mincut);
@@ -88,7 +100,14 @@ public class FonctionsRegression {
         }
         return fils;
     }
-
+    
+    /**
+     * 
+     * @param Y vecteur de double, variable cible
+     * @param X liste de vecteurs de doubles, ensemble des variables sauf la cible
+     * @param mincut nombre minimum de personnes dans un espace
+     * @return Retourne le meilleur vecteur de découpage, selon la variance
+     */
     public static double[] meilleureVarianceGlob(double[] Y, ArrayList<double[]> X, int mincut) {
         double[] meilXi = null;
         int i = 1;
@@ -105,7 +124,14 @@ public class FonctionsRegression {
         }
         return meilXi;
     }
-
+    
+    /**
+     * 
+     * @param Y vecteur de double, variable cible
+     * @param X vecteur de double, variable étudiée
+     * @param mincut nombre minimum de personnes par sous ensemble
+     * @return Retourne le meilleur indice de découpage, selon la variance
+     */
     public static int meilleureVarianceXi(double[] Y, double[] X, int mincut) {
         int meil = Y.length + 1;
         double varCour, meilVar = 0;

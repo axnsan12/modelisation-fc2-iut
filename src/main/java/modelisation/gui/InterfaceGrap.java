@@ -114,7 +114,6 @@ public class InterfaceGrap extends Application {
         Column idColumn = tbleViewSelect.getIdColumn(), targetColumn = tbleViewSelect.getTargetColumn();
         if (idColumn == null || targetColumn == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            // TODO: translate labels?
             alert.setTitle("Probleme");
             alert.setHeaderText("Mauvais choix");
             alert.setContentText("Choisissez la cible et l ID des colonnes");
@@ -125,7 +124,6 @@ public class InterfaceGrap extends Application {
 
         if (tbleViewSelect.getDataColumnIndexes().isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            // TODO: translate labels?
             alert.setTitle("Probleme");
             alert.setHeaderText("Mauvais choix");
             alert.setContentText("Choisissez au moins une colonne de donnees!");

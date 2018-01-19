@@ -90,6 +90,12 @@ public class Indicateurs {
     }
 
     //Renvoie la table de contingence de deux vecteurs passes en parametres
+    /**
+     * 
+     * @param X vecteur d'entiers
+     * @param Y vecteur d'entiers
+     * @return Retourne le tableau de contingence des deux vecteurs
+     */
     private static int[][] tabCont(int[] X, int[] Y) {
         int[][] tab;
         int[] totopt1 = calculOption(X);
@@ -133,6 +139,11 @@ public class Indicateurs {
 
 
     //Renvoie un vecteur contenant la liste des options possibles.
+    /**
+     * 
+     * @param x vecteur d'entiers
+     * @return Retourne un tableau comprenant un exemplaire de chaque valeur présente dans le vecteur
+     */
     private static int[] calculOption(int[] x) {
         String s1 = "", s2 = "";
         boolean opt = false;
@@ -162,7 +173,11 @@ public class Indicateurs {
         triBulleCroissant(options);
         return options;
     }
-
+    
+    /**
+     * 
+     * @param tableau tableau d'entiers
+     */
     private static void triBulleCroissant(int tableau[]) {
         int longueur = tableau.length;
         int tampon;

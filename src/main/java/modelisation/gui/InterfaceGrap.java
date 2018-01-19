@@ -417,13 +417,13 @@ public class InterfaceGrap extends Application {
      * @param node
      * @param s
      */
-    private void impression(Node node,Stage s){   	
+    private void impression(Node n,Stage s){   	
     	PrinterJob print = PrinterJob.createPrinterJob();
    		if (print == null) 
    			return;
    		boolean bol = print.showPrintDialog(s);
    		if (bol){
-   			boolean printed = print.printPage(node);
+   			boolean printed = print.printPage(n);
    			if (printed) 
    				print.endJob();
    		}

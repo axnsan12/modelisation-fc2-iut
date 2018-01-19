@@ -18,6 +18,6 @@ public class ClassificationError extends BaseClassificationSplittingStrategy {
 
     @Override
     public String getName() {
-        return "classification error";
+        return "Erreur de classement";
     }
 }

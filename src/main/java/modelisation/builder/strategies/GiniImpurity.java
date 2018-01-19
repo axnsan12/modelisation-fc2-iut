@@ -18,6 +18,6 @@ public class GiniImpurity extends BaseClassificationSplittingStrategy {
 
     @Override
     public String getName() {
-        return "gini";
+        return "Gini";
     }
 }

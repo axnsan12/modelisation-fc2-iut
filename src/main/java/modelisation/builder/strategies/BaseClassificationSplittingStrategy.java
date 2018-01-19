@@ -26,4 +26,14 @@ import modelisation.data.SplitColumn;
     public boolean supportsTarget(Column targetColumn) {
         return targetColumn.isDiscrete();
     }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj != null && getClass().equals(obj.getClass());
+    }
 }

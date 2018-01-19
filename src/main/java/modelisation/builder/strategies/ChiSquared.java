@@ -18,6 +18,6 @@ public class ChiSquared extends BaseClassificationSplittingStrategy {
 
     @Override
     public String getName() {
-        return "chi^2";
+        return "Chi^2";
     }
 }

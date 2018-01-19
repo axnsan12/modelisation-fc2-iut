@@ -21,10 +21,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import modelisation.builder.DecisionTreeBuilder;
-import modelisation.builder.strategies.ChiSquared;
-import modelisation.builder.strategies.ClassificationError;
-import modelisation.builder.strategies.EntropyReduction;
-import modelisation.builder.strategies.GiniImpurity;
+import modelisation.builder.strategies.*;
 import modelisation.data.Column;
 import modelisation.data.TrainingData;
 import modelisation.io.CsvDataReader;
@@ -37,7 +34,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -308,100 +307,65 @@ public class InterfaceGrap extends Application {
         Stage s = new Stage();
 
         GridPane root = new GridPane();
-        VBox vbox1 = new VBox();
-        VBox vbox2 = new VBox();
-        VBox vbox3 = new VBox();
-        ToggleGroup group1 = new ToggleGroup();
-        ToggleGroup group2 = new ToggleGroup();
-        RadioButton rb1 = new RadioButton("Classification");
-        RadioButton rb2 = new RadioButton("Regression");
-        Label label = new Label("Select ");
-        RadioButton rb3 = new RadioButton("Automatique");
-        RadioButton rb4 = new RadioButton("Semi-automatique");
-        RadioButton rb5 = new RadioButton("Utilisateur");
-
-        RadioButton rb6 = new RadioButton("Chi2");
-        RadioButton rb7 = new RadioButton("Gini");
-        RadioButton rb8 = new RadioButton("Entropie");
-        RadioButton rb9 = new RadioButton("Erreur de classement");
-        Button btnV = new Button("Valider");
-        Button btnC = new Button("Annule");
         HBox hbox = new HBox();
-        Slider slider = new Slider();
-        VBox vbox4 = new VBox();
 
-        //appelle à l'indicateur Chi2
-        rb6.setOnAction(event -> config = config.withSplittingStrategy(new ChiSquared()));
+        RadioButton rbClassif = new RadioButton("Classification");
+        RadioButton rbRegress = new RadioButton("Regression");
 
-        //appelle à l'indicateur Gini
-        rb7.setOnAction(event -> config = config.withSplittingStrategy(new GiniImpurity()));
+        ToggleGroup treeTypeRadioGroup = new ToggleGroup();
+        rbClassif.setToggleGroup(treeTypeRadioGroup);
+        rbRegress.setToggleGroup(treeTypeRadioGroup);
+        rbClassif.setSelected(true);
 
-        //appelle à l'indicateur Entropie
-        rb8.setOnAction(event -> config = config.withSplittingStrategy(new EntropyReduction()));
+        VBox vboxTreeType = new VBox();
+        vboxTreeType.getChildren().addAll(rbClassif, rbRegress);
+        vboxTreeType.setSpacing(3);
+        vboxTreeType.setAlignment(Pos.TOP_LEFT);
+        root.add(vboxTreeType, 0, 1);
 
-        //appelle à l'indicateur Erreur classement
-        rb9.setOnAction(event -> config = config.withSplittingStrategy(new ClassificationError()));
+        ToggleGroup metricRadioGroup = new ToggleGroup();
+        List<SplittingStrategy> metrics = Arrays.asList(
+                new ChiSquared(),
+                new GiniImpurity(),
+                new EntropyReduction(),
+                new ClassificationError()
+        );
+        Map<SplittingStrategy, RadioButton> radioButtons = metrics.stream()
+                .collect(Collectors.toMap(split -> split, split -> {
+                    RadioButton radio = new RadioButton(split.getName());
+                    radio.setUserData(split);
+                    radio.setToggleGroup(metricRadioGroup);
+                    radio.setSelected(split.equals(config.getSplittingStrategy()));
+                    return radio;
+                }));
+        metricRadioGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                SplittingStrategy strategy = (SplittingStrategy) newValue.getUserData();
+                config = config.withSplittingStrategy(strategy);
+            }
+        });
 
+        VBox vboxMetrics = new VBox();
+        vboxMetrics.getChildren().addAll(radioButtons.values());
+        vboxMetrics.setAlignment(Pos.TOP_LEFT);
+        vboxMetrics.setSpacing(3);
+        root.add(vboxMetrics, 1, 1);
 
-        rb1.setToggleGroup(group1);
-        rb1.setSelected(true);
-        rb2.setToggleGroup(group1);
-        vbox1.getChildren().addAll(rb1, rb2);
-        vbox1.setSpacing(3);
-        vbox1.setAlignment(Pos.TOP_LEFT);
-        root.add(vbox1, 0, 1);
-        GridPane.setMargin(vbox1, new Insets(2, 2, 2, 2));
-
-        rb3.setToggleGroup(group2);
-        rb3.setSelected(true);
-        rb4.setToggleGroup(group2);
-        rb5.setToggleGroup(group2);
-        vbox2.getChildren().addAll(rb3, rb4, rb5);
-        vbox2.setAlignment(Pos.TOP_LEFT);
-        vbox2.setSpacing(3);
-        root.add(vbox2, 0, 2);
-        GridPane.setMargin(vbox2, new Insets(2, 2, 2, 2));
-
-        rb6.setToggleGroup(group2);
-        rb6.setSelected(true);
-        rb7.setToggleGroup(group2);
-        rb8.setToggleGroup(group2);
-        rb9.setToggleGroup(group2);
-        vbox3.getChildren().addAll(rb6, rb7, rb8, rb9);
-        vbox3.setAlignment(Pos.TOP_LEFT);
-        vbox3.setSpacing(3);
-        root.add(vbox3, 1, 1);
-        GridPane.setMargin(vbox3, new Insets(2, 2, 2, 2));
+        Button btnV = new Button("Valider");
+        btnV.setOnAction(event -> s.close());
         root.setPadding(new Insets(20));
 
-        vbox4.getChildren().addAll(label, slider);
-        vbox4.setSpacing(5);
         hbox.setAlignment(Pos.TOP_CENTER);
-
-        slider.setMin(0);
-        slider.setMax(100);
-        slider.setValue(10);
-        //slider.setShowTickLabels(true);
-        // slider.setShowTickMarks(true);
-        slider.setMajorTickUnit(50);
-        slider.setMinorTickCount(5);
-        slider.setBlockIncrement(10);
-        root.add(vbox4, 1, 2);
-        GridPane.setMargin(vbox4, new Insets(2, 2, 2, 2));
-
         hbox.getChildren().add(btnV);
-        hbox.getChildren().add(btnC);
         hbox.setSpacing(35);
         hbox.setAlignment(Pos.CENTER_RIGHT);
         root.add(hbox, 1, 3);
-        GridPane.setMargin(hbox, new Insets(10, 2, 0, 0));
 
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(20));
         root.setHgap(10);
         root.setVgap(10);
-        s.setMinWidth(300);
-        s.setMinHeight(300);
+        s.setTitle("Parametrage");
         s.setScene(new Scene(root));
         return s;
     }

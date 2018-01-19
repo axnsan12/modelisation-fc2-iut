@@ -18,6 +18,6 @@ public class EntropyReduction extends BaseClassificationSplittingStrategy {
 
     @Override
     public String getName() {
-        return "entropy";
+        return "Entropie";
     }
 }

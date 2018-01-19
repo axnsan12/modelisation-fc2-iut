@@ -15,8 +15,8 @@ public class DecisionTreeBuilder {
     public static final Configuration DEFAULT_CONFIG = new Configuration()
             .withMinNodeSize(3)
             .withMinSplitSize(7)
-            .withHomogenityThreshold(75)
-            .withMaxDepth(3)
+            .withHomogenityThreshold(85)
+            .withMaxDepth(8)
             .withSplittingStrategy(new ChiSquared());
 
     protected TrainingData trainingData;

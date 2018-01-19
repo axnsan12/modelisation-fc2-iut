@@ -27,5 +27,12 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/EBOMA/workspace/ProjetIHM/lib/commons-beanutils-1.9.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/EBOMA/workspace/ProjetIHM/lib/commons-collections-3.2.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/EBOMA/workspace/ProjetIHM/lib/commons-lang3-3.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/EBOMA/workspace/ProjetIHM/lib/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/EBOMA/workspace/ProjetIHM/lib/commons-text-1.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/EBOMA/workspace/ProjetIHM/lib/opencsv-4.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/EBOMA/workspace/ProjetIHM/lib/org.eclipse.jdt.annotation-2.1.100.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

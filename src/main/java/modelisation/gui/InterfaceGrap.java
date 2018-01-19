@@ -10,6 +10,8 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.print.PrinterJob;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -41,12 +43,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/**
- * Classe d'affichage de l'interface graphique
- *
- * @author agnerayq
- * @author eboma
- */
 
 public class InterfaceGrap extends Application {
     TableView<Integer> tbleView; //tableau pour stocker les données
@@ -81,11 +77,18 @@ public class InterfaceGrap extends Application {
         splitVertical.getItems().addAll(tbleView, tbleViewSelect);
 
         ToolBar treeTolbar = new ToolBar();
-        Button selectC2 = new Button("Supprimer");
-        Button validerS2 = new Button("Annuler");
+        Button generer = new Button("Generer Arbre");
+        Button supprimer = new Button("Supprimer");
+        Button annuler = new Button("Annuler");
         treeTolbar.setPrefHeight(20);
-        treeTolbar.getItems().addAll(selectC2, validerS2);
-
+        treeTolbar.getItems().addAll(generer,supprimer, annuler);
+        
+        generer.setOnAction(evt -> {
+            if (!checkColumnSelections()) {
+                return;
+            }
+            treeView.setTree(buildTree(tbleViewSelect.getTargetColumn(), tbleViewSelect.getIdColumn()));
+        });
         BorderPane treePane = new BorderPane();
         treePane.setTop(treeTolbar);
         treePane.setCenter(treeView);
@@ -291,10 +294,8 @@ public class InterfaceGrap extends Application {
         parametrage.setOnAction(evt -> buildParametrage().show());
 
         imprimer.setOnAction(evt -> {
-            if (!checkColumnSelections()) {
-                return;
-            }
-            treeView.setTree(buildTree(tbleViewSelect.getTargetColumn(), tbleViewSelect.getIdColumn()));
+        	Stage s = new Stage();
+        	impression(treeView, s);
         });
 
         toolbar.setPrefHeight(55);
@@ -392,4 +393,16 @@ public class InterfaceGrap extends Application {
         s.setScene(new Scene(root));
         return s;
     }
+    
+    private void impression(Node node,Stage s){   	
+    	PrinterJob print = PrinterJob.createPrinterJob();
+   		if (print == null) 
+   			return;
+   		boolean bol = print.showPrintDialog(s);
+   		if (bol){
+   			boolean printed = print.printPage(node);
+   			if (printed) 
+   				print.endJob();
+   		}
+   	}
 }

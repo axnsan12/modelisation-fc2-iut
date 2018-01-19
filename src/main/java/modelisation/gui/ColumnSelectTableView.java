@@ -76,6 +76,7 @@ public class ColumnSelectTableView extends TableView<Column> {
 
         this.setEditable(true);
 
+        this.getColumns().add(new ContinuityTableColumn("Continuite"));
         this.getColumns().add(new CheckBoxTableColumn<>("Inclus", selectedColumns));
         this.getColumns().add(new RadioTableColumn<>("Cible", targetColumn));
         this.getColumns().add(new RadioTableColumn<>("ID", idColumn));
@@ -86,8 +87,16 @@ public class ColumnSelectTableView extends TableView<Column> {
         return targetColumn.getValue();
     }
 
+    public ObjectProperty<Column> targetColumnProperty() {
+        return targetColumn;
+    }
+
     public Column getIdColumn() {
         return idColumn.getValue();
+    }
+
+    public ObjectProperty<Column> idColumnProperty() {
+        return idColumn;
     }
 
     public List<Integer> getDataColumnIndexes() {

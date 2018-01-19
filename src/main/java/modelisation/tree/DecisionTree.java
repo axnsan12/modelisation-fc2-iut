@@ -16,7 +16,7 @@ public class DecisionTree {
     private final ArrayList<DecisionTree> children = new ArrayList<>();
 
     /**
-     * Create a new DecisionTree node. <br/>
+     * Create a new DecisionTree node.
      *
      * @param columnIndex the index of the column this node is splitting on
      * @param columnName  the name of the column this node is splitting on
@@ -92,7 +92,7 @@ public class DecisionTree {
      * The partiotion label that was used to arrive at this node from its parent.
      * <p>
      * Example 1: if a node splits on column A with continous values between 10 and 100, it might have
-     * two children with branch labels <code>"&lt;40"</code> and <code>"&gt;=40"</code>. <br/>
+     * two children with branch labels <code>"&lt;40"</code> and <code>"&gt;=40"</code>.
      * <p>
      * Example 2: a node that splits on column B with three possible values, `a`, `b`, `c`, it might have
      * three children, whose branch labels will be <code>"a", "b", "c"</code> respectively

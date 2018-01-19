@@ -10,7 +10,7 @@ public class Stat {
      * Calculate the median value of an array.
      * <p>
      * The median of a set of numbers is defined as the value X for which
-     * there are as many elements < X as there are > X.
+     * there are as many elements &lt; X as there are &gt; X.
      *
      * @return median value
      */

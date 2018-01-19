@@ -9,7 +9,7 @@ public class FonctionsRegression {
      * @param i indice teste
      * @param Y Variable cible
      * @param X Variable a etudier
-     * @return Retourne la variance relative a un vecteur et a un indice précis par rapport à la variable mesuree
+     * @return Retourne la variance relative a un vecteur et a un indice prÃ©cis par rapport Ã  la variable mesuree
      */
     public static double d(int i, double[] Y, double[] X) {
         double c = C(i, X);
@@ -73,8 +73,8 @@ public class FonctionsRegression {
     
     /**
      * 
-     * @param i référence d'indice a tester
-     * @param X vecteur à tester
+     * @param i rÃ©fÃ©rence d'indice a tester
+     * @param X vecteur Ã  tester
      * @return Retourne le facteur c a pour un vecteur et un indice precis
      */
     public static double C(int i, double[] X) {
@@ -86,7 +86,7 @@ public class FonctionsRegression {
      * @param Y vecteur de double, variable a etudier
      * @param X vecteur de double, vecteur a evaluer
      * @param mincut nombre minimum de personnes par ensemble
-     * @return Retourne un ensemble de deux double contenant les quantité presente dans chacun des deux sous fils
+     * @return Retourne un ensemble de deux double contenant les quantitÃ© presente dans chacun des deux sous fils
      */
     public static double[] ensembleFils(double[] Y, double[] X, int mincut) {
         double[] fils = {0, 0};
@@ -106,7 +106,7 @@ public class FonctionsRegression {
      * @param Y vecteur de double, variable cible
      * @param X liste de vecteurs de doubles, ensemble des variables sauf la cible
      * @param mincut nombre minimum de personnes dans un espace
-     * @return Retourne le meilleur vecteur de découpage, selon la variance
+     * @return Retourne le meilleur vecteur de dÃ©coupage, selon la variance
      */
     public static double[] meilleureVarianceGlob(double[] Y, ArrayList<double[]> X, int mincut) {
         double[] meilXi = null;
@@ -119,7 +119,7 @@ public class FonctionsRegression {
                 meilVar = varCour;
                 meilXi = Xi;
             }
-            System.out.println(i + ": AprÃ¨s :" + varCour + " " + meilVar);
+            System.out.println(i + ": AprÃƒÂ¨s :" + varCour + " " + meilVar);
             i++;
         }
         return meilXi;
@@ -128,9 +128,9 @@ public class FonctionsRegression {
     /**
      * 
      * @param Y vecteur de double, variable cible
-     * @param X vecteur de double, variable étudiée
+     * @param X vecteur de double, variable Ã©tudiÃ©e
      * @param mincut nombre minimum de personnes par sous ensemble
-     * @return Retourne le meilleur indice de découpage, selon la variance
+     * @return Retourne le meilleur indice de dÃ©coupage, selon la variance
      */
     public static int meilleureVarianceXi(double[] Y, double[] X, int mincut) {
         int meil = Y.length + 1;

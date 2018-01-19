@@ -4,9 +4,6 @@ import java.util.ArrayList;
 
 public class FonctionRegressionTest {
     public static void main(String[] args) {
-
-        // TODO Auto-generated method stub
-
         double[] Y = {1, 2, 2, 2, 3, 2, 1, 5, 4, 2, 5, 2, 3, 2, 4, 2, 5, 2};
         double[] X1 = {0, 0.5, -1, 0.75, -3, 0.2, 3, 0.7, 2, 0, 0.75, -1, 2, 1, -1, 0.5, -0.5, 2.5};
         double[] X2 = {10, 12, 42, 52, 31, 92, 1, 54, 24, 12, 52, 21, 31, 24, 43, 62, 75, 21};

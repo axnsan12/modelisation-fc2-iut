@@ -142,7 +142,7 @@ public class Indicateurs {
     /**
      * 
      * @param x vecteur d'entiers
-     * @return Retourne un tableau comprenant un exemplaire de chaque valeur pr�sente dans le vecteur
+     * @return Retourne un tableau comprenant un exemplaire de chaque valeur présente dans le vecteur
      */
     private static int[] calculOption(int[] x) {
         String s1 = "", s2 = "";
@@ -184,12 +184,12 @@ public class Indicateurs {
         boolean permut;
 
         do {
-            // hypothèse : le tableau est trié
+            // hypothÃ¨se : le tableau est triÃ©
             permut = false;
             for (int i = 0; i < longueur - 1; i++) {
-                // Teste si 2 éléments successifs sont dans le bon ordre ou non
+                // Teste si 2 Ã©lÃ©ments successifs sont dans le bon ordre ou non
                 if (tableau[i] > tableau[i + 1]) {
-                    // s'ils ne le sont pas, on échange leurs positions
+                    // s'ils ne le sont pas, on Ã©change leurs positions
                     tampon = tableau[i];
                     tableau[i] = tableau[i + 1];
                     tableau[i + 1] = tampon;

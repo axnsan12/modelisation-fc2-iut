@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 public class RegressionTreeTest {
     public static void main(String[] args) {
         try {
-            TrainingData car93 = new CsvDataReader("datasets/93cars.dat.txt").read();
+            TrainingData car93 = new CsvDataReader("datasets/93cars.dat.csv").read();
 
             DecisionTreeBuilder.Configuration cfg = DecisionTreeBuilder.DEFAULT_CONFIG
                     .withMaxDepth(3)

@@ -1,0 +1,17 @@
+Caroline Mathon
+Marcelin Eboma
+Cristian Vijdea
+Quentin Agneray
+
+DUT Informatique FC2
+
+
+Finalité du projet fonctionnalités implémentés
+
+
+Nous avons pu implémenter la création d’un tableau de contingence. Les indicateurs de classifications , l’indicateur de régression de variance et des méthodes permettant d’évaluer les meilleurs éléments de découpage. Nous n’avons pas eu le temps d’implémenter un algorithme de régression linéaire permettant la prédictibilité de la variable cible.
+
+
+Nous n'avons pas la possibilité de rajouter des informations au CSV.
+
+Nous avons implémenter la possibilité de récupérer un  jeu de données au format CSV. Nous avons géré l’affichage de ses données dans un  tableau. Nous pouvons également sauvegarder l’arbre au format image png . Nous affichons également un arbre de décision (utilisation d’un TreeView) en fonction des différents paramètres (indicateurs) choisis par l’utilisateur. Nous laissons la possibilité à l’utilisateur de choisir les différents indicateurs pour créer l’arbre (Khi2 , Gini , Entropie , …) ainsi que le type d’arbre souhaité Classification ou Régression. Nous avons également la possibilité d’imprimer l’arbre généré. 

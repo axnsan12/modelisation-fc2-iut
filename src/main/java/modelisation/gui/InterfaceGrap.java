@@ -83,6 +83,7 @@ public class InterfaceGrap extends Application {
         treeTolbar.setPrefHeight(20);
         treeTolbar.getItems().addAll(generer,supprimer, annuler);
         
+        // generation de l'arbre (TreeView)
         generer.setOnAction(evt -> {
             if (!checkColumnSelections()) {
                 return;
@@ -105,15 +106,18 @@ public class InterfaceGrap extends Application {
 
         readDataFromCsv(new File("datasets/train.csv"));
     }
-
+    /**
+     * methode de verification de la selection des colonnes
+     * @return
+     */
     private boolean checkColumnSelections() {
         Column idColumn = tbleViewSelect.getIdColumn(), targetColumn = tbleViewSelect.getTargetColumn();
         if (idColumn == null || targetColumn == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             // TODO: translate labels?
-            alert.setTitle("Oops");
-            alert.setHeaderText("Bad choice");
-            alert.setContentText("Choose target and ID columns");
+            alert.setTitle("Probleme");
+            alert.setHeaderText("Mauvais choix");
+            alert.setContentText("Choisissez la cible et l ID des colonnes");
 
             alert.showAndWait();
             return false;
@@ -122,9 +126,9 @@ public class InterfaceGrap extends Application {
         if (tbleViewSelect.getDataColumnIndexes().isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             // TODO: translate labels?
-            alert.setTitle("Oops");
-            alert.setHeaderText("Bad choice");
-            alert.setContentText("Choose at least one data column!");
+            alert.setTitle("Probleme");
+            alert.setHeaderText("Mauvais choix");
+            alert.setContentText("Choisissez au moins une colonne de donnees!");
 
             alert.showAndWait();
             return false;
@@ -148,7 +152,12 @@ public class InterfaceGrap extends Application {
         );
         return treeBuilder.buildTree();
     }
-
+    /***
+     * methode de sauvegarde de l arbre au format png
+     * @param targetColumn
+     * @param idColumn
+     * @param png
+     */
     private void exportTreeAsPng(Column targetColumn, Column idColumn, File png) {
         DecisionTree tree = buildTree(targetColumn, idColumn);
 
@@ -222,7 +231,11 @@ public class InterfaceGrap extends Application {
         rowIndexes.addAll(IntStream.range(0, data.size()).boxed().collect(Collectors.toList()));
         tbleView.setItems(rowIndexes); // ajouts des données au tableView
     }
-
+    
+    /**
+     * methode de creation de la barre de menu
+     * @return
+     */
     private ToolBar buildToolbar() {
         ToolBar toolbar = new ToolBar();
 
@@ -292,7 +305,8 @@ public class InterfaceGrap extends Application {
 
 
         parametrage.setOnAction(evt -> buildParametrage().show());
-
+        
+        //impression de l arbre
         imprimer.setOnAction(evt -> {
         	Stage s = new Stage();
         	impression(treeView, s);
@@ -302,7 +316,11 @@ public class InterfaceGrap extends Application {
         toolbar.getItems().addAll(ouvrir, enregistre, parametrage, imprimer);
         return toolbar;
     }
-
+    
+    /**
+     * methode creation de la fenetre de choix des indicateurs
+     * @return
+     */
     private Stage buildParametrage() {
         Stage s = new Stage();
 
@@ -394,6 +412,11 @@ public class InterfaceGrap extends Application {
         return s;
     }
     
+    /**
+     * methode d impression de l arbre
+     * @param node
+     * @param s
+     */
     private void impression(Node node,Stage s){   	
     	PrinterJob print = PrinterJob.createPrinterJob();
    		if (print == null) 

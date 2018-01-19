@@ -78,10 +78,8 @@ public class InterfaceGrap extends Application {
 
         ToolBar treeTolbar = new ToolBar();
         Button generer = new Button("Generer Arbre");
-        Button supprimer = new Button("Supprimer");
-        Button annuler = new Button("Annuler");
         treeTolbar.setPrefHeight(20);
-        treeTolbar.getItems().addAll(generer,supprimer, annuler);
+        treeTolbar.getItems().addAll(generer);
         
         // generation de l'arbre (TreeView)
         generer.setOnAction(evt -> {
@@ -412,10 +410,10 @@ public class InterfaceGrap extends Application {
     
     /**
      * methode d impression de l arbre
-     * @param node
-     * @param s
+     * @param n view a imprimer
+     * @param s parent stage
      */
-    private void impression(Node n,Stage s){   	
+    private void impression(Node n, Stage s){
     	PrinterJob print = PrinterJob.createPrinterJob();
    		if (print == null) 
    			return;

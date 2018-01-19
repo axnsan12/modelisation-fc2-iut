@@ -1,0 +1,35 @@
+Ce fichier doit contenir:
+
+- Java: 1.8
+
+- ligne de commande pour compiler le projet (en supposant qu'on se trouve dans le répertoire de ce fichier):
+
+ mvn package
+
+  NOTE: il faut ajutour le proxy de l'IUT pour maven dans le fichier ~/.m2/settings.xml (créer s'il n'existe pas):
+
+   <settings>
+           <proxies>
+                   <proxy>
+                           <id>univ-lille1-http</id>
+                           <active>true</active>
+                           <protocol>http</protocol>
+                           <host>cache.univ-lille1.fr</host>
+                           <port>3128</port>
+                           <nonProxyHosts>localhost|127.0.0.1</nonProxyHosts>
+                   </proxy>
+                   <proxy>
+                           <id>univ-lille1-https</id>
+                           <active>true</active>
+                           <protocol>https</protocol>
+                           <host>cache.univ-lille1.fr</host>
+                           <port>3128</port>
+                           <nonProxyHosts>localhost|127.0.0.1</nonProxyHosts>
+                   </proxy>
+           </proxies>
+   </settings>
+
+- ligne de commande pour exécuter le projet (en supposant qu'on se trouve dans le répertoire de ce fichier):
+
+ java -jar jar/modelisation-1.1-FINAL-jar-with-dependencies.jar
+

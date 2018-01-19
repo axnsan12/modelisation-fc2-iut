@@ -6,7 +6,7 @@
 
     <groupId>fc2.iut</groupId>
     <artifactId>modelisation</artifactId>
-    <version>1.0.1</version>
+    <version>1.1-FINAL</version>
 
     <build>
         <resources>
